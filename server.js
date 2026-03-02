@@ -11,24 +11,41 @@ let firebaseReady = false;
 
 try {
   const fs = require('fs');
-  if (fs.existsSync(path.join(__dirname, 'serviceAccountKey.json'))) {
-    const serviceAccount = require('./serviceAccountKey.json');
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount),
-    });
-    db = admin.firestore();
-    firebaseReady = true;
-    console.log('✅ Firebase Admin initialized successfully');
+  let serviceAccount;
+
+  // Try environment variable first (for Render deployment)
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    console.log('🔑 Using Firebase credentials from environment variable');
+    serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+  } 
+  // Fallback to local file (for local development)
+  else if (fs.existsSync(path.join(__dirname, 'serviceAccountKey.json'))) {
+    console.log('🔑 Using Firebase credentials from serviceAccountKey.json');
+    serviceAccount = require('./serviceAccountKey.json');
   } else {
-    throw new Error('File not found');
+    throw new Error('No Firebase credentials found');
   }
+
+  admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+  });
+  db = admin.firestore();
+  firebaseReady = true;
+  console.log('✅ Firebase Admin initialized successfully');
 } catch (err) {
-  console.warn('⚠️  serviceAccountKey.json not found!');
+  console.warn('⚠️  Firebase credentials not found!');
   console.warn('   The server will run in DEMO MODE (UI only, no backend features).');
-  console.warn('   To enable full functionality:');
+  console.warn('');
+  console.warn('   For LOCAL development:');
   console.warn('   1. Go to Firebase Console → Project Settings → Service Accounts');
   console.warn('   2. Click "Generate New Private Key"');
   console.warn('   3. Save the file as serviceAccountKey.json in this folder');
+  console.warn('');
+  console.warn('   For RENDER deployment:');
+  console.warn('   1. Copy the entire content of serviceAccountKey.json');
+  console.warn('   2. In Render dashboard, add Environment Variable:');
+  console.warn('      Key: FIREBASE_SERVICE_ACCOUNT');
+  console.warn('      Value: [paste the entire JSON content]');
   console.warn('');
 }
 

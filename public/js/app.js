@@ -2120,6 +2120,14 @@ function checkTodayImportantDays() {
 
 // Show important day notification popup
 function showImportantDayNotification(importantDays) {
+    console.log('🎉 showImportantDayNotification called with:', importantDays);
+    
+    // Save to notification history
+    importantDays.forEach(day => {
+        saveImportantDayToHistory(day);
+    });
+    
+    // Create modal overlay
     const overlay = document.createElement('div');
     overlay.style.cssText = `
         position: fixed;
@@ -2151,7 +2159,9 @@ function showImportantDayNotification(importantDays) {
     
     // Build content
     let content = `
-        <div style="font-size: 60px; margin-bottom: 20px;">📅</div>
+        <div style="font-size: 60px; margin-bottom: 20px;">
+            <i class="bi bi-calendar-event" style="color: #ec4899;"></i>
+        </div>
         <h2 style="margin: 10px 0; color: #1e293b;">Important Day${importantDays.length > 1 ? 's' : ''} Today!</h2>
         <p style="font-size: 14px; color: #64748b; margin-bottom: 20px;">
             Don't forget these special events:
@@ -2162,15 +2172,18 @@ function showImportantDayNotification(importantDays) {
     importantDays.forEach(day => {
         const emoji = day.emoji || '🎉';
         const color = day.color || '#ec4899';
+        const title = day.title || 'Untitled';
+        const notes = day.notes || '';
+        
         content += `
             <div style="background: ${color}10; padding: 15px; margin: 10px 0; border-radius: 8px; text-align: left;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
                     <span style="font-size: 24px;">${emoji}</span>
                 </div>
                 <div style="font-size: 18px; font-weight: 700; color: ${color}; margin-bottom: 5px;">
-                    ${escapeHtml(day.title)}
+                    ${title}
                 </div>
-                ${day.notes ? `<div style="font-size: 14px; color: #64748b;">${escapeHtml(day.notes)}</div>` : ''}
+                ${notes ? `<div style="font-size: 14px; color: #64748b;">${notes}</div>` : ''}
             </div>
         `;
     });
@@ -2187,12 +2200,25 @@ function showImportantDayNotification(importantDays) {
             cursor: pointer;
             margin-top: 20px;
             width: 100%;
-        ">Got it! 👍</button>
+        ">Got it!</button>
     `;
     
     modal.innerHTML = content;
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+    
+    // Play sound
+    const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGS57OihUBELTKXh8bllHAU2jdXvzn0pBSh+zPDajzsKElyx6OyrWBUIQ5zd8sFuJAUuhM/z24k2CBhku+zooVARC0yl4fG5ZRwFNo3V7859KQUofsz');
+    audio.play().catch(() => {});
+    
+    // Auto-close after 10 seconds
+    setTimeout(() => {
+        if (overlay.parentElement) {
+            overlay.remove();
+        }
+    }, 10000);
+    
+    console.log('✅ Important day popup added to DOM');
 }
 
 // Get important days for a specific date string (YYYY-MM-DD)
@@ -2308,6 +2334,11 @@ function editImportantDay(dayId) {
 
 async function deleteImportantDay(dayId) {
     if (!confirm('Delete this event?')) return;
+    
+    // Find the day to check if it's a team day
+    const day = allImportantDays.find(d => d.id === dayId);
+    const isTeamDay = day && day.type === 'team';
+    
     try {
         const token = await currentUser.getIdToken();
         const res = await fetch('/api/important-days/delete', {
@@ -2317,6 +2348,16 @@ async function deleteImportantDay(dayId) {
         });
         if (res.ok) {
             showToast('Event deleted!', '🗑️');
+            
+            // Emit socket event for team important days
+            if (isTeamDay && socket && socket.connected) {
+                console.log('📡 Emitting important day deletion to team');
+                socket.emit('important_day_updated', {
+                    action: 'deleted',
+                    orgId: localStorage.getItem('psyc_orgId')
+                });
+            }
+            
             loadImportantDays();
             // Refresh calendar markers
             await fetchImportantDaysForCalendar();
@@ -2374,13 +2415,21 @@ async function saveImportantDay() {
             const result = await res.json();
             console.log('✅ Server response:', result);
             showToast(editingImportantDayId ? 'Event updated!' : 'Event added!', '⭐');
+            
+            // Emit socket event for team important days to notify other team members
+            if (currentImportantDayType === 'team' && socket && socket.connected) {
+                console.log('📡 Emitting important day update to team');
+                socket.emit('important_day_updated', {
+                    action: editingImportantDayId ? 'updated' : 'created',
+                    orgId: localStorage.getItem('psyc_orgId')
+                });
+            }
+            
             editingImportantDayId = null;
             hideImportantDayForm();
             
             // Refresh both lists to ensure new data is loaded
             await loadImportantDays();
-            await fetchImportantDaysForCalendar();
-            if (typeof renderCalendarGrid === 'function') renderCalendarGrid();
             await fetchImportantDaysForCalendar();
             if (typeof renderCalendarGrid === 'function') renderCalendarGrid();
         } else {
@@ -2567,6 +2616,14 @@ async function connectSocket(user) {
     socket.on('new_group_notification', (data) => {
         console.log('🔔 Received live notification:', data);
 
+        // Check if it's an important day notification
+        if (data.type === 'important_day' && data.dayData) {
+            console.log('📅 Received team important day notification:', data.dayData);
+            // Show popup for team important day
+            showImportantDayNotification([data.dayData]);
+            return;
+        }
+
         // Add to the beginning of the list
         notificationLogs.unshift(data);
 
@@ -2582,6 +2639,15 @@ async function connectSocket(user) {
         if (data.userId !== currentUser?.uid) {
             showToast(`${data.userName}: ${data.title}`, '🔔');
         }
+    });
+
+    // Real-time important day updates
+    socket.on('important_day_updated', async (data) => {
+        console.log('📅 Important day updated:', data);
+        // Reload important days list
+        await loadImportantDays();
+        await fetchImportantDaysForCalendar();
+        if (typeof renderCalendarGrid === 'function') renderCalendarGrid();
     });
 
     // Real-time status update for Team Grid
@@ -3274,10 +3340,176 @@ function addEntry(entry) {
     }
 }
 
+function renderImportantDaysBanner() {
+    const banner = document.getElementById('important-days-banner');
+    if (!banner) return;
+
+    // Get today's date (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Filter important days for today
+    const todayImportantDays = allImportantDays.filter(day => day.date === today);
+    
+    // If no important days today, hide banner
+    if (todayImportantDays.length === 0) {
+        banner.style.display = 'none';
+        return;
+    }
+    
+    // Show compact card
+    banner.style.display = 'block';
+    
+    // Get first important day for preview
+    const firstDay = todayImportantDays[0];
+    const color = '#ff9500'; // Always orange for the banner
+    const count = todayImportantDays.length;
+    
+    banner.innerHTML = `
+        <div onclick="openTodaysEventsModal()" style="
+            background: ${color}40;
+            cursor: pointer;
+            position: relative;
+            margin-bottom: 16px;
+            border-radius: 16px;
+            border: 2px solid ${color}60;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        ">
+            <div style="
+                width: 48px;
+                height: 48px;
+                border-radius: 50%;
+                background: ${color};
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 24px;
+                flex-shrink: 0;
+                color: white;
+            ">
+                <i class="bi bi-star-fill"></i>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <div style="
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: ${color};
+                    margin-bottom: 4px;
+                    white-space: nowrap;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                ">
+                    ${count > 1 ? `${count} Important Events Today` : firstDay.title}
+                </div>
+                <div style="
+                    font-size: 13px;
+                    color: ${color}CC;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                ">
+                    <i class="bi bi-hand-index"></i> ${count > 1 ? 'Tap to view all' : 'Tap to view details'}
+                </div>
+            </div>
+            <i class="bi bi-chevron-right" style="color: ${color}; font-size: 20px; flex-shrink: 0;"></i>
+        </div>
+    `;
+}
+
+function openTodaysEventsModal() {
+    const modal = document.getElementById('todays-events-modal');
+    if (modal) {
+        renderTodaysEventsList();
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeTodaysEventsModal() {
+    const modal = document.getElementById('todays-events-modal');
+    if (modal) {
+        const overlay = modal.querySelector('.mood-modal-overlay');
+        const sheet = modal.querySelector('.mood-modal-sheet');
+        if (overlay) overlay.classList.add('closing');
+        if (sheet) sheet.classList.add('closing');
+
+        setTimeout(() => {
+            modal.classList.remove('open');
+            if (overlay) overlay.classList.remove('closing');
+            if (sheet) sheet.classList.remove('closing');
+            document.body.style.overflow = '';
+        }, 300);
+    }
+}
+
+function renderTodaysEventsList() {
+    const container = document.getElementById('todays-events-list');
+    if (!container) return;
+
+    // Get today's date (YYYY-MM-DD)
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Filter important days for today
+    const todayImportantDays = allImportantDays.filter(day => day.date === today);
+    
+    if (todayImportantDays.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
+                <i class="bi bi-calendar-x" style="font-size: 48px; margin-bottom: 10px;"></i>
+                <p>No important events today</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = todayImportantDays.map(day => {
+        const emoji = day.emoji || '🎉';
+        const color = day.color || '#ec4899';
+        const time = day.time ? formatTime(day.time) : '';
+        const isTeam = day.type === 'team';
+        
+        return `
+            <div style="
+                background: linear-gradient(135deg, ${color}15 0%, ${color}05 100%);
+                border-left: 4px solid ${color};
+                padding: 16px;
+                border-radius: 12px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            ">
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <div style="font-size: 32px; min-width: 40px; text-align: center;">${emoji}</div>
+                    <div style="flex: 1;">
+                        <div style="
+                            font-size: 18px;
+                            font-weight: 700;
+                            color: ${color};
+                            margin-bottom: 8px;
+                            display: flex;
+                            align-items: center;
+                            gap: 8px;
+                            flex-wrap: wrap;
+                        ">
+                            ${day.title}
+                            ${isTeam ? `<span style="font-size: 12px; background: ${color}20; color: ${color}; padding: 2px 8px; border-radius: 8px; font-weight: 600;"><i class="bi bi-people-fill"></i> Team</span>` : ''}
+                        </div>
+                        ${day.notes ? `<div style="font-size: 14px; color: #64748b; margin-bottom: 8px; line-height: 1.5;">${day.notes}</div>` : ''}
+                        ${time ? `<div style="font-size: 13px; color: #94a3b8;"><i class="bi bi-clock"></i> ${time}</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
 function renderEntries() {
     const container = document.getElementById('entries-list');
     const quickMoodCard = document.getElementById('quick-mood-card');
     if (!container) return;
+
+    // Render important days banner for today
+    renderImportantDaysBanner();
 
     // Hide quick mood card when rendering entries
     if (quickMoodCard) quickMoodCard.style.display = 'none';
@@ -3287,34 +3519,11 @@ function renderEntries() {
         ? moodEntries.filter(entry => entry.uid === currentUser?.uid)
         : moodEntries;
 
-    // Merge Important Days into the feed (filter by viewMonth)
-    const eventEntries = allImportantDays
-        .filter(day => {
-            const eventDate = new Date(day.date + 'T12:00:00');
-            return eventDate.getMonth() === viewMonth.getMonth() &&
-                eventDate.getFullYear() === viewMonth.getFullYear();
-        })
-        .map(day => {
-            // Use actual time if set, otherwise noon
-            const timeStr = day.time ? day.time : '12:00';
-            const ts = new Date(day.date + 'T' + timeStr + ':00').getTime();
-            const emoji = day.emoji || '⭐';
-            const color = day.color || '#6366f1';
-            return {
-                id: 'event-' + day.id,
-                type: 'event',
-                timestamp: ts,
-                name: day.title,
-                emoji: emoji,
-                color: color,
-                notes: day.notes || '',
-                time: day.time || null,
-                isTeam: day.type === 'team'
-            };
-        });
+    // Important days are NO LONGER mixed with entries - they're in the banner now
+    // So we remove the eventEntries merging code
 
-    // Combine and re-sort
-    let combinedEntries = [...filteredEntries, ...eventEntries];
+    // Combine and re-sort (just mood entries now)
+    let combinedEntries = [...filteredEntries];
     combinedEntries.sort((a, b) => b.timestamp - a.timestamp);
 
     // removed: daily filtering so we show all entries for the month
@@ -4253,82 +4462,113 @@ function startGoalNotificationEngine() {
 
     console.log('🔔 Starting real-time notification engine...');
 
-    // Load notified goals from localStorage
+    // Load notified items from localStorage
     const notifiedGoals = JSON.parse(localStorage.getItem('psyc_notified_goals') || '{}');
+    const notifiedDays = JSON.parse(localStorage.getItem('psyc_notified_important_days') || '{}');
     const today = new Date().toDateString();
 
     // Check every second
     goalNotificationChecker = setInterval(() => {
-        if (!goalsList || goalsList.length === 0 || !currentUser) return;
-
         const now = new Date();
         const currentDay = now.getDay(); // 0 = Sunday, 6 = Saturday
         const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         let hasChanges = false;
         
-        goalsList.forEach(goal => {
-            const userSettings = goal.userNotificationSettings?.[currentUser.uid] || {};
-            const notifEnabled = userSettings.enabled !== false;
-            
-            // Handle new format (frequency + days + time)
-            if (goal.reminderFrequency && goal.reminderTime) {
-                // Check if this goal should fire today
-                let shouldFireToday = false;
-                if (goal.reminderFrequency === 'daily') {
-                    shouldFireToday = true;
-                } else if (goal.reminderFrequency === 'custom' && goal.reminderDays) {
-                    shouldFireToday = goal.reminderDays.includes(currentDay);
+        // Check GOALS
+        if (goalsList && goalsList.length > 0 && currentUser) {
+            goalsList.forEach(goal => {
+                const userSettings = goal.userNotificationSettings?.[currentUser.uid] || {};
+                const notifEnabled = userSettings.enabled !== false;
+                
+                // Handle new format (frequency + days + time)
+                if (goal.reminderFrequency && goal.reminderTime) {
+                    // Check if this goal should fire today
+                    let shouldFireToday = false;
+                    if (goal.reminderFrequency === 'daily') {
+                        shouldFireToday = true;
+                    } else if (goal.reminderFrequency === 'custom' && goal.reminderDays) {
+                        shouldFireToday = goal.reminderDays.includes(currentDay);
+                    }
+
+                    if (!shouldFireToday) return;
+
+                    // Check if already notified today (from localStorage)
+                    const notifKey = `${goal.id}_${today}`;
+                    const alreadyNotified = notifiedGoals[notifKey] === true;
+
+                    // Check if time matches (HH:MM format)
+                    const timeMatches = currentTime === goal.reminderTime;
+
+                    // If time matches and not yet notified today and notifications enabled
+                    if (timeMatches && !alreadyNotified && notifEnabled) {
+                        console.log('🔔 Time reached for:', goal.title);
+                        fireGoalNotification(goal);
+                        
+                        // Mark as notified today in localStorage
+                        notifiedGoals[notifKey] = true;
+                        localStorage.setItem('psyc_notified_goals', JSON.stringify(notifiedGoals));
+                        
+                        hasChanges = true;
+                    }
                 }
+                // Handle old format (reminderDateTime) - for backward compatibility
+                else if (goal.reminderDateTime) {
+                    const notifKey = `${goal.id}_${goal.reminderDateTime}`;
+                    const alreadyNotified = notifiedGoals[notifKey] === today;
 
-                if (!shouldFireToday) return;
+                    const reminderTime = new Date(goal.reminderDateTime).getTime();
+                    const nowMs = now.getTime();
 
-                // Check if already notified today (from localStorage)
-                const notifKey = `${goal.id}_${today}`;
-                const alreadyNotified = notifiedGoals[notifKey] === true;
-
-                // Check if time matches (HH:MM format)
-                const timeMatches = currentTime === goal.reminderTime;
-
-                // If time matches and not yet notified today and notifications enabled
-                if (timeMatches && !alreadyNotified && notifEnabled) {
-                    console.log('🔔 Time reached for:', goal.title);
-                    fireGoalNotification(goal);
+                    // If time has arrived and not yet notified and notifications enabled
+                    if (nowMs >= reminderTime && !alreadyNotified && notifEnabled) {
+                        console.log('🔔 Time reached for:', goal.title);
+                        fireGoalNotification(goal);
+                        
+                        // Mark as notified in localStorage
+                        notifiedGoals[notifKey] = today;
+                        localStorage.setItem('psyc_notified_goals', JSON.stringify(notifiedGoals));
+                        
+                        hasChanges = true;
+                    }
+                }
+            });
+        }
+        
+        // Check IMPORTANT DAYS
+        if (allImportantDays && allImportantDays.length > 0) {
+            allImportantDays.forEach(day => {
+                if (!day.time) return; // Skip if no time set
+                
+                const dayDate = day.date; // YYYY-MM-DD
+                const todayDate = now.toISOString().split('T')[0];
+                
+                // Only check if it's today
+                if (dayDate !== todayDate) return;
+                
+                // Check if already notified
+                const notifKey = `${day.id}_${dayDate}`;
+                const alreadyNotified = notifiedDays[notifKey] === true;
+                
+                // Check if time matches
+                const timeMatches = currentTime === day.time;
+                
+                if (timeMatches && !alreadyNotified) {
+                    console.log('📅 Time reached for important day:', day.title);
+                    fireImportantDayNotification(day);
                     
-                    // Mark as notified today in localStorage
-                    notifiedGoals[notifKey] = true;
-                    localStorage.setItem('psyc_notified_goals', JSON.stringify(notifiedGoals));
+                    // Mark as notified
+                    notifiedDays[notifKey] = true;
+                    localStorage.setItem('psyc_notified_important_days', JSON.stringify(notifiedDays));
                     
                     hasChanges = true;
                 }
-            }
-            // Handle old format (reminderDateTime) - for backward compatibility
-            else if (goal.reminderDateTime) {
-                const notifKey = `${goal.id}_${goal.reminderDateTime}`;
-                const alreadyNotified = notifiedGoals[notifKey] === today;
-
-                const reminderTime = new Date(goal.reminderDateTime).getTime();
-                const nowMs = now.getTime();
-
-                // If time has arrived and not yet notified and notifications enabled
-                if (nowMs >= reminderTime && !alreadyNotified && notifEnabled) {
-                    console.log('🔔 Time reached for:', goal.title);
-                    fireGoalNotification(goal);
-                    
-                    // Mark as notified in localStorage
-                    notifiedGoals[notifKey] = today;
-                    localStorage.setItem('psyc_notified_goals', JSON.stringify(notifiedGoals));
-                    
-                    hasChanges = true;
-                }
-            }
-        });
-
+            });
+        }
+        
         if (hasChanges) {
-            renderGoalsList();
+            renderNotificationHistory();
         }
     }, 1000); // Check every second
-
-    console.log('✅ Notification engine started');
 }
 
 // Test function - call this in console to test notification immediately
@@ -4353,6 +4593,23 @@ window.testGoalNotification = function() {
     
     fireGoalNotification(testGoal);
     console.log('✅ Test notification fired');
+};
+
+// Test function for important day notifications
+window.testImportantDayNotification = function() {
+    console.log('🧪 Testing important day notification...');
+    
+    const testDay = {
+        id: 'test-day-123',
+        title: 'Test Important Day',
+        notes: 'This is a test important day notification',
+        emoji: '🎉',
+        color: '#ec4899',
+        date: new Date().toISOString().split('T')[0]
+    };
+    
+    showImportantDayNotification([testDay]);
+    console.log('✅ Test important day notification fired');
 };
 
 function stopGoalNotificationEngine() {
@@ -4419,13 +4676,15 @@ function showInAppGoalNotification(goal) {
     const typeColor = goal.type === 'team' ? '#8b5cf6' : '#6366f1';
     
     modal.innerHTML = `
-        <div style="font-size: 60px; margin-bottom: 20px;">🎯</div>
+        <div style="font-size: 60px; margin-bottom: 20px;">
+            <i class="bi bi-bullseye" style="color: ${typeColor};"></i>
+        </div>
         <div style="display: inline-block; background: ${typeColor}20; color: ${typeColor}; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600; margin-bottom: 10px;">
             ${goalType}
         </div>
         <h2 style="margin: 10px 0; color: #1e293b;">Goal Reminder!</h2>
         <p style="font-size: 18px; color: #64748b; margin: 0 0 10px 0;">
-            Hoy! Oras na para sa:
+            It's time for:
         </p>
         <p style="font-size: 20px; font-weight: bold; color: ${typeColor}; margin: 0;">
             ${goal.title}
@@ -4488,6 +4747,59 @@ function saveNotificationToHistory(goal) {
     console.log('✅ Notification saved to history');
 }
 
+function saveImportantDayToHistory(day) {
+    const history = JSON.parse(localStorage.getItem('psyc_notification_history') || '[]');
+    
+    // Check if this day was already saved today (prevent duplicates)
+    const today = new Date().toISOString().split('T')[0];
+    const alreadySaved = history.some(n => 
+        n.type === 'importantDay' && 
+        n.dayId === day.id && 
+        n.dayDate === today
+    );
+    
+    if (alreadySaved) {
+        console.log('⚠️ Important day notification already in history, skipping');
+        return;
+    }
+    
+    // Generate unique ID using timestamp and counter
+    const baseId = Date.now();
+    let uniqueId = baseId;
+    let counter = 1;
+    while (history.some(n => n.id === uniqueId)) {
+        uniqueId = baseId + counter;
+        counter++;
+    }
+    
+    const notification = {
+        id: uniqueId,
+        dayId: day.id,
+        dayTitle: day.title,
+        dayNotes: day.notes || '',
+        dayEmoji: day.emoji || '🎉',
+        dayColor: day.color || '#ec4899',
+        dayDate: day.date,
+        timestamp: Date.now(),
+        type: 'importantDay',
+        read: false
+    };
+    
+    history.unshift(notification); // Add to beginning
+    
+    // Keep only last 50 notifications
+    if (history.length > 50) {
+        history.splice(50);
+    }
+    
+    localStorage.setItem('psyc_notification_history', JSON.stringify(history));
+    
+    // Update notification bell badge
+    updateNotificationBadge();
+    
+    console.log('✅ Important day notification saved to history');
+}
+
 function getNotificationHistory() {
     return JSON.parse(localStorage.getItem('psyc_notification_history') || '[]');
 }
@@ -4499,6 +4811,82 @@ function markNotificationAsRead(notifId) {
         notif.read = true;
         localStorage.setItem('psyc_notification_history', JSON.stringify(history));
         updateNotificationBadge();
+        renderNotificationHistory();
+    }
+}
+
+function handleNotificationClick(notifId, goalId) {
+    // Mark as read
+    markNotificationAsRead(notifId);
+    
+    // Find the goal
+    const goal = goalsList.find(g => g.id === goalId);
+    if (goal) {
+        // Open goals modal if not already open
+        const goalsModal = document.getElementById('goals-modal');
+        if (goalsModal && !goalsModal.classList.contains('open')) {
+            openGoalsModal();
+        }
+        
+        // Make sure we're on the list view (not edit form)
+        if (document.getElementById('goal-form-view').style.display !== 'none') {
+            hideGoalForm();
+        }
+        
+        // Wait a bit for modal to open and render, then scroll to goal
+        setTimeout(() => {
+            // Find the goal element and scroll to it
+            const goalElements = document.querySelectorAll('.goal-item');
+            goalElements.forEach(el => {
+                const goalTitle = el.querySelector('.goal-title');
+                if (goalTitle && goalTitle.textContent.trim() === goal.title) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Highlight the goal briefly
+                    el.style.background = 'rgba(139, 92, 246, 0.15)';
+                    el.style.transition = 'background 0.5s';
+                    setTimeout(() => {
+                        el.style.background = '';
+                    }, 2000);
+                }
+            });
+        }, 400);
+    } else {
+        showToast('Goal not found', 'ℹ️');
+    }
+}
+
+function handleImportantDayNotificationClick(notifId, dayId) {
+    // Mark as read
+    markNotificationAsRead(notifId);
+    
+    // Find the important day
+    const day = allImportantDays.find(d => d.id === dayId);
+    if (day) {
+        // Open important days modal if not already open
+        const importantDaysModal = document.getElementById('important-days-modal');
+        if (importantDaysModal && !importantDaysModal.classList.contains('open')) {
+            openImportantDaysModal();
+        }
+        
+        // Wait a bit for modal to open and render, then scroll to day
+        setTimeout(() => {
+            // Find the day element and scroll to it
+            const dayElements = document.querySelectorAll('.important-day-item');
+            dayElements.forEach(el => {
+                const dayTitle = el.querySelector('.important-day-title');
+                if (dayTitle && dayTitle.textContent.trim() === day.title) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    // Highlight the day briefly
+                    el.style.background = 'rgba(236, 72, 153, 0.15)';
+                    el.style.transition = 'background 0.5s';
+                    setTimeout(() => {
+                        el.style.background = '';
+                    }, 2000);
+                }
+            });
+        }, 400);
+    } else {
+        showToast('Important day not found', 'ℹ️');
     }
 }
 
@@ -4538,29 +4926,59 @@ function renderNotificationHistory() {
     
     if (history.length === 0) {
         container.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #94a3b8;">
-                <i class="bi bi-bell-slash" style="font-size: 48px; margin-bottom: 10px;"></i>
-                <p>No new notifications</p>
+            <div style="text-align: center; padding: 12px; color: #94a3b8;">
+                <i class="bi bi-bell-slash" style="font-size: 28px; margin-bottom: 6px; opacity: 0.4;"></i>
+                <p style="margin: 0; font-size: 13px;">No new notifications</p>
             </div>
         `;
         return;
     }
     
-    container.innerHTML = history.map(notif => {
+    // Sort: unread first, then by timestamp (newest first)
+    const sortedHistory = [...history].sort((a, b) => {
+        if (a.read !== b.read) {
+            return a.read ? 1 : -1; // Unread first
+        }
+        return b.timestamp - a.timestamp; // Newest first within same read status
+    });
+    
+    container.innerHTML = sortedHistory.map(notif => {
         const date = new Date(notif.timestamp);
         const timeAgo = getTimeAgo(notif.timestamp);
         
-        return `
-            <div class="notification-item ${notif.read ? 'read' : 'unread'}" onclick="markNotificationAsRead(${notif.id})">
-                <div class="notification-icon">🎯</div>
-                <div class="notification-content">
-                    <div class="notification-title">${notif.goalTitle}</div>
-                    ${notif.goalDescription ? `<div class="notification-desc">${notif.goalDescription}</div>` : ''}
-                    <div class="notification-time">${timeAgo}</div>
+        if (notif.type === 'importantDay') {
+            // Important Day notification
+            const emoji = notif.dayEmoji || '🎉';
+            const color = notif.dayColor || '#ec4899';
+            return `
+                <div class="notification-item ${notif.read ? 'read' : 'unread'}" onclick="handleImportantDayNotificationClick(${notif.id}, '${notif.dayId}')">
+                    <div class="notification-icon">
+                        <i class="bi bi-calendar-event" style="font-size: 24px; color: ${color};"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.dayTitle}</div>
+                        ${notif.dayNotes ? `<div class="notification-desc">${notif.dayNotes}</div>` : ''}
+                        <div class="notification-time">${timeAgo}</div>
+                    </div>
+                    ${!notif.read ? '<div class="notification-unread-dot"></div>' : ''}
                 </div>
-                ${!notif.read ? '<div class="notification-unread-dot"></div>' : ''}
-            </div>
-        `;
+            `;
+        } else {
+            // Goal notification
+            return `
+                <div class="notification-item ${notif.read ? 'read' : 'unread'}" onclick="handleNotificationClick(${notif.id}, '${notif.goalId}')">
+                    <div class="notification-icon">
+                        <i class="bi bi-bullseye" style="font-size: 24px; color: #8b5cf6;"></i>
+                    </div>
+                    <div class="notification-content">
+                        <div class="notification-title">${notif.goalTitle}</div>
+                        ${notif.goalDescription ? `<div class="notification-desc">${notif.goalDescription}</div>` : ''}
+                        <div class="notification-time">${timeAgo}</div>
+                    </div>
+                    ${!notif.read ? '<div class="notification-unread-dot"></div>' : ''}
+                </div>
+            `;
+        }
     }).join('');
 }
 
@@ -4684,94 +5102,28 @@ function markImpDayFired(notifId) {
 }
 
 async function scheduleImportantDayNotifications() {
-    Object.values(importantDayTimeouts).forEach(timeoutId => clearTimeout(timeoutId));
-    importantDayTimeouts = {};
-
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
-
-    const now = new Date();
-    const firedNotifs = getFiredImpDayNotifications();
-
-    allImportantDays.forEach(day => {
-        const eventTimeStr = day.time || '09:00';
-        const eventDateTime = new Date(day.date + 'T' + eventTimeStr + ':00');
-
-        let reminderOffsetMs = 0;
-        if (day.reminderBefore) {
-            switch (day.reminderBefore) {
-                case '15min': reminderOffsetMs = 15 * 60 * 1000; break;
-                case '30min': reminderOffsetMs = 30 * 60 * 1000; break;
-                case '1hour': reminderOffsetMs = 60 * 60 * 1000; break;
-                case '1day': reminderOffsetMs = 24 * 60 * 60 * 1000; break;
-                case '1week': reminderOffsetMs = 7 * 24 * 60 * 60 * 1000; break;
-            }
-        }
-
-        const notifTime = eventDateTime.getTime() - reminderOffsetMs;
-        const notifId = `impday-${day.id}-${day.date}-${day.reminderBefore || 'default'}`;
-
-        if (notifTime > now.getTime() && !firedNotifs.includes(notifId)) {
-            const delay = notifTime - now.getTime();
-            if (delay < 7 * 24 * 60 * 60 * 1000) {
-                importantDayTimeouts[notifId] = setTimeout(() => {
-                    markImpDayFired(notifId);
-                    fireImportantDayNotification(day, day.reminderBefore);
-                }, delay);
-            }
-        } else if (notifTime <= now.getTime() && notifTime > now.getTime() - (2 * 60 * 60 * 1000) && !firedNotifs.includes(notifId)) {
-            markImpDayFired(notifId);
-            fireImportantDayNotification(day, day.reminderBefore, true);
-        }
-
-        if (day.reminderBefore && day.reminderBefore !== 'at_time' && day.reminderBefore !== 'none') {
-            const atTimeNotifId = `impday-${day.id}-${day.date}-at_time`;
-            if (eventDateTime.getTime() > now.getTime() && !firedNotifs.includes(atTimeNotifId)) {
-                const delay = eventDateTime.getTime() - now.getTime();
-                if (delay < 7 * 24 * 60 * 60 * 1000) {
-                    importantDayTimeouts[atTimeNotifId] = setTimeout(() => {
-                        markImpDayFired(atTimeNotifId);
-                        fireImportantDayNotification(day, 'at_time');
-                    }, delay);
-                }
-            }
-        }
-    });
+    // This function is now just a placeholder - we use real-time checking instead
+    console.log('📅 Important day notifications will be checked in real-time');
 }
 
 function fireImportantDayNotification(day, reminderType, isCatchUp = false) {
-    const emoji = day.emoji || '📅';
-
-    const reminderLabels = {
-        'at_time': 'Now!',
-        '15min': 'In 15 minutes',
-        '30min': 'In 30 minutes',
-        '1hour': 'In 1 hour',
-        '1day': 'Tomorrow',
-        '1week': 'Next week',
-        'default': 'Today'
-    };
-    const reminderText = reminderLabels[reminderType] || reminderLabels['default'];
-
-    // Push real-time notification to the team/user via Socket (new feature)
-    if (socket) {
+    console.log('🔔 Firing important day notification for:', day.title);
+    
+    // Show in-app notification popup (same as goals)
+    showImportantDayNotification([day]);
+    
+    // If it's a team important day, emit socket event to notify all team members
+    if (day.type === 'team' && socket && socket.connected) {
+        console.log('📡 Emitting team important day notification via socket');
         socket.emit('createNotification', {
             title: day.title,
-            body: `${reminderText} - ${day.notes || 'Important Day'}`,
+            body: day.notes || 'Important Team Event',
             type: 'important_day',
-            category: day.type || 'personal',
-            linkId: day.id
+            category: 'team',
+            linkId: day.id,
+            dayData: day // Include full day data
         });
     }
-
-    try {
-        new Notification(`${emoji} ${day.title}`, {
-            body: `${reminderText}${day.time ? ' at ' + formatTime(day.time) : ''}\n${day.notes || ''}`,
-            tag: `impday-${day.id}-${reminderType}`,
-            icon: '/assets/logo/logo.png'
-        });
-    } catch { }
-
-    showToast(`${emoji} ${day.title} — ${reminderText}`, '📅');
 }
 
 // ─── Logout ─────────────────────────────────────────────────────

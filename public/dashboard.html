@@ -89,6 +89,9 @@
                 </div>
             </div>
 
+            <!-- Important Days Banner (shows only if there are important days today) -->
+            <div id="important-days-banner" style="display: none;"></div>
+
             <div id="entries-list" class="entries-list">
                 <div class="first-entry-msg">
                     <p data-i18n="first_entry_msg">Pick a mood to create your first entry!</p>
@@ -199,8 +202,21 @@
                 <div class="chart-wrap"><canvas id="mood-dist-chart"></canvas></div>
             </div>
             <div class="card" id="top-activities-card">
-                <h3 class="card-label">Top Activities</h3>
-                <div class="chart-wrap"><canvas id="activity-chart"></canvas></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3 class="card-label" style="margin: 0;">Top Activities</h3>
+                    <a id="view-all-activities-link" onclick="openAllActivitiesModal()" style="
+                        display: none;
+                        font-size: 14px;
+                        color: #8b5cf6;
+                        text-decoration: none;
+                        cursor: pointer;
+                        font-weight: 500;
+                        transition: color 0.2s;
+                    " onmouseover="this.style.color='#7c3aed'" onmouseout="this.style.color='#8b5cf6'">
+                      View all <i class="bi bi-chevron-right"></i>
+                    </a>
+                </div>
+                <div id="activity-chart"></div>
             </div>
 
             <!-- View Year Statistics Button -->
@@ -494,7 +510,7 @@
                 <div class="mood-modal-sheet">
                     <div class="modal-header">
                         <button type="button" class="modal-back-btn" onclick="closeSettingsModal()">
-                            <i class="bi bi-arrow-left"></i>
+                            <i class="bi bi-chevron-left"></i>
                         </button>
                         <h2 class="sheet-title" data-i18n="settings">Settings</h2>
                         <div style="width: 40px;"></div>
@@ -559,7 +575,7 @@
                 <div class="mood-modal-sheet">
                     <div class="modal-header">
                         <button type="button" class="modal-back-btn" onclick="closeAboutModal()">
-                            <i class="bi bi-arrow-left"></i>
+                            <i class="bi bi-chevron-left"></i>
                         </button>
                         <h2 class="sheet-title" data-i18n="about">About</h2>
                         <div style="width: 40px;"></div>
@@ -592,7 +608,7 @@
                 <div class="mood-modal-sheet">
                     <div class="modal-header">
                         <button type="button" class="modal-back-btn" onclick="closeRemindersSettings()">
-                            <i class="bi bi-arrow-left"></i>
+                            <i class="bi bi-chevron-left"></i>
                         </button>
                         <h2 class="sheet-title" data-i18n="reminders">Reminders</h2>
                         <div style="width: 40px;"></div>
@@ -646,7 +662,7 @@
             <div class="mood-modal-sheet">
                 <div class="modal-header">
                     <button type="button" class="modal-back-btn" onclick="closeAdminPanel()">
-                        <i class="bi bi-arrow-left"></i>
+                        <i class="bi bi-chevron-left"></i>
                     </button>
                     <h2 class="sheet-title">Admin Panel</h2>
                     <div style="width: 40px;"></div>
@@ -708,7 +724,7 @@
             <div class="mood-modal-sheet">
                 <div class="modal-header">
                     <button type="button" class="modal-back-btn" onclick="closeManageMembers()">
-                        <i class="bi bi-arrow-left"></i>
+                        <i class="bi bi-chevron-left"></i>
                     </button>
                     <h2 class="sheet-title">Manage Members</h2>
                     <div style="width: 40px;"></div>
@@ -727,7 +743,7 @@
             <div class="mood-modal-sheet team-stats-sheet">
                 <div class="modal-header">
                     <button type="button" class="modal-back-btn" onclick="closeTeamStats()">
-                        <i class="bi bi-arrow-left"></i>
+                        <i class="bi bi-chevron-left"></i>
                     </button>
                     <h2 class="sheet-title">Team Statistics</h2>
                     <div style="width: 40px;"></div>
@@ -842,8 +858,21 @@
                     </div>
 
                     <div class="card team-chart-card">
-                        <h3 class="card-label" data-i18n="team_top_activities">Top Activities</h3>
-                        <div class="chart-wrap"><canvas id="team-overall-activity-chart"></canvas></div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 class="card-label" data-i18n="team_top_activities" style="margin: 0;">Top Activities</h3>
+                            <a id="view-all-team-activities-link" onclick="openAllTeamActivitiesModal()" style="
+                                display: none;
+                                font-size: 14px;
+                                color: #8b5cf6;
+                                text-decoration: none;
+                                cursor: pointer;
+                                font-weight: 500;
+                                transition: color 0.2s;
+                            " onmouseover="this.style.color='#7c3aed'" onmouseout="this.style.color='#8b5cf6'">
+                                 <i class="bi bi-chevron-right"></i>
+                            </a>
+                        </div>
+                        <div id="team-overall-activity-chart"></div>
                     </div>
                 </div>
             </div>
@@ -911,7 +940,7 @@
         <div class="mood-modal-sheet">
             <div class="modal-header">
                 <button type="button" class="modal-back-btn" onclick="closeCustomizeModal()">
-                    <i class="bi bi-arrow-left"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <h2 class="sheet-title" id="customize-title">Customize</h2>
                 <button type="button" class="modal-save-btn" onclick="saveCustomizations()">
@@ -959,7 +988,7 @@
         <div class="mood-modal-sheet edit-item-sheet">
             <div class="modal-header">
                 <button type="button" class="modal-back-btn" onclick="closeEditItemModal()">
-                    <i class="bi bi-arrow-left"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <h2 class="sheet-title" id="edit-item-title">Edit Item</h2>
                 <button type="button" class="modal-save-btn" onclick="saveEditedItem()">
@@ -1010,7 +1039,7 @@
             <div class="modal-header">
                 <button type="button" class="modal-back-btn" onclick="closeQuickMoodModal()"
                     style="background: transparent; border: 1px solid #2a2a2a;">
-                    <i class="bi bi-x"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <h2 class="sheet-title">How are you?</h2>
             </div>
@@ -1048,7 +1077,7 @@
             <div class="sheet-handle"></div>
             <div class="modal-header">
                 <button type="button" class="modal-back-btn" onclick="closeDayDetails()">
-                    <i class="bi bi-x"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <div class="header-text" style="flex: 1; text-align: center;">
                     <h2 class="sheet-title" id="day-details-title" style="margin-bottom: 2px;">Day History</h2>
@@ -1080,7 +1109,7 @@
             <!-- Modal Header -->
             <div class="modal-header">
                 <button type="button" class="modal-back-btn" onclick="closeMoodModal()">
-                    <i class="bi bi-arrow-left"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <h2 class="sheet-title">What have you been up to?</h2>
                 <button type="button" class="modal-save-btn" onclick="sendMoodEntry()">
@@ -1170,7 +1199,7 @@
         <div class="mood-modal-sheet">
             <div class="modal-header">
                 <button type="button" class="modal-back-btn" onclick="closeGoalsModal()">
-                    <i class="bi bi-x"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <h2 class="sheet-title">Goals</h2>
                 <button type="button" class="modal-save-btn" id="goals-add-btn" onclick="showGoalForm()">
@@ -1280,7 +1309,7 @@
         <div class="mood-modal-sheet">
             <div class="modal-header">
                 <button type="button" class="modal-back-btn" onclick="closeImportantDaysModal()">
-                    <i class="bi bi-x"></i>
+                    <i class="bi bi-chevron-left"></i>
                 </button>
                 <h2 class="sheet-title">Important Days</h2>
                 <button type="button" class="modal-save-btn" id="important-days-add-btn"
@@ -1465,6 +1494,68 @@
             setTimeout(hideLoader, 2000);
         });
     </script>
+
+    <!-- ─── Today's Important Events Modal ───────────────────────────────── -->
+    <div id="todays-events-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeTodaysEventsModal()"></div>
+        <div class="mood-modal-sheet">
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeTodaysEventsModal()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <h2 class="sheet-title">Today's Important Events</h2>
+                <button type="button" class="modal-save-btn" onclick="openImportantDaysModal(); closeTodaysEventsModal();">
+                    <i class="bi bi-calendar-plus"></i>
+                </button>
+            </div>
+
+            <div class="modal-content" style="padding: 10px 0 20px;">
+                <div id="todays-events-list" style="display: flex; flex-direction: column; gap: 12px; padding: 0 16px;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── All Activities Modal ───────────────────────────────── -->
+    <div id="all-activities-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeAllActivitiesModal()"></div>
+        <div class="mood-modal-sheet">
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeAllActivitiesModal()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <h2 class="sheet-title">All Activities</h2>
+                <div style="width: 40px;"></div>
+            </div>
+
+            <div class="modal-content" style="padding: 10px 0 20px;">
+                <div id="all-activities-list" style="display: flex; flex-direction: column; gap: 12px; padding: 0 16px;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── All Team Activities Modal ───────────────────────────────── -->
+    <div id="all-team-activities-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeAllTeamActivitiesModal()"></div>
+        <div class="mood-modal-sheet">
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeAllTeamActivitiesModal()">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <h2 class="sheet-title">All Team Activities</h2>
+                <div style="width: 40px;"></div>
+            </div>
+
+            <div class="modal-content" style="padding: 10px 0 20px;">
+                <div id="all-team-activities-list" style="display: flex; flex-direction: column; gap: 12px; padding: 0 16px;">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 

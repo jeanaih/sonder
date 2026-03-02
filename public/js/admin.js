@@ -840,110 +840,162 @@ function renderTeamDistChart(moodDistribution) {
 function renderTeamActivityChart(topActivities) {
     console.log('Rendering team activity chart with data:', topActivities);
 
-    const canvas = document.getElementById('team-overall-activity-chart');
-    if (!canvas) {
-        console.error('Canvas element not found: team-overall-activity-chart');
+    const container = document.getElementById('team-overall-activity-chart');
+    if (!container) {
+        console.error('Container element not found: team-overall-activity-chart');
         return;
     }
 
-    const ctx = canvas.getContext('2d');
-
+    // Destroy old chart if exists
     if (window.teamActivityChart) {
         window.teamActivityChart.destroy();
+        window.teamActivityChart = null;
     }
 
     if (!topActivities || topActivities.length === 0) {
         console.log('No activity data available');
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.font = '14px Inter';
-        ctx.fillStyle = '#9ca3af';
-        ctx.textAlign = 'center';
-        ctx.fillText('No activity data yet', canvas.width / 2, canvas.height / 2);
+        container.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #9ca3af;">
+                <i class="bi bi-bar-chart" style="font-size: 32px; margin-bottom: 8px; opacity: 0.4;"></i>
+                <p style="margin: 0; font-size: 13px;">No activity data yet</p>
+            </div>
+        `;
         return;
     }
 
-    // Create gradient colors for bars
-    const gradients = topActivities.map((_, index) => {
-        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-        const colors = [
-            ['rgba(102, 126, 234, 0.8)', 'rgba(118, 75, 162, 0.8)'],
-            ['rgba(240, 147, 251, 0.8)', 'rgba(245, 87, 108, 0.8)'],
-            ['rgba(79, 172, 254, 0.8)', 'rgba(0, 242, 254, 0.8)'],
-            ['rgba(250, 208, 196, 0.8)', 'rgba(255, 209, 255, 0.8)'],
-            ['rgba(168, 230, 161, 0.8)', 'rgba(255, 217, 61, 0.8)']
-        ];
-        const colorPair = colors[index % colors.length];
-        gradient.addColorStop(0, colorPair[0]);
-        gradient.addColorStop(1, colorPair[1]);
-        return gradient;
-    });
+    // Store all activities globally for modal
+    window.allTeamActivitiesData = topActivities;
 
-    window.teamActivityChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: topActivities.map(a => a.activity),
-            datasets: [{
-                label: 'Count',
-                data: topActivities.map(a => a.count),
-                backgroundColor: gradients,
-                borderColor: 'transparent',
-                borderWidth: 0,
-                borderRadius: 8,
-                borderSkipped: false
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: false
-                },
-                tooltip: {
-                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                    padding: 12,
-                    cornerRadius: 8,
-                    titleFont: {
-                        size: 13,
-                        weight: '600'
-                    },
-                    bodyFont: {
-                        size: 12
-                    }
-                }
-            },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        stepSize: 1,
-                        font: {
-                            size: 11,
-                            family: 'Inter'
-                        }
-                    },
-                    grid: {
-                        color: 'rgba(0, 0, 0, 0.05)',
-                        drawBorder: false
-                    }
-                },
-                x: {
-                    ticks: {
-                        maxRotation: 45,
-                        minRotation: 0,
-                        font: {
-                            size: 11,
-                            family: 'Inter'
-                        }
-                    },
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    }
-                }
-            }
-        }
-    });
+    // Limit to 6 activities
+    const displayLimit = 6;
+    const displayActivities = topActivities.slice(0, displayLimit);
+    const hasMore = topActivities.length > displayLimit;
 
-    console.log('Team activity chart rendered successfully');
+    // Always show "More >" link if there are activities
+    const moreLink = document.getElementById('view-all-team-activities-link');
+    if (moreLink) {
+        moreLink.style.display = topActivities.length > 0 ? 'flex' : 'none';
+    }
+    
+    // Also update the modal version if it exists
+    const moreLinkModal = document.getElementById('view-all-team-activities-link-modal');
+    if (moreLinkModal) {
+        moreLinkModal.style.display = topActivities.length > 0 ? 'flex' : 'none';
+    }
+
+    // Render pills
+    container.style.display = 'flex';
+    container.style.flexWrap = 'wrap';
+    container.style.gap = '10px';
+    container.style.padding = '10px 0';
+    container.style.justifyContent = 'flex-start';
+
+    container.innerHTML = displayActivities.map(item => {
+        const activityLabel = item.activity;
+        const count = item.count;
+        
+        return `
+            <div style="
+                position: relative;
+                background: #f1f5f9;
+                border: 2px solid #e2e8f0;
+                border-radius: 32px;
+                padding: 10px 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #334155;
+                transition: all 0.2s;
+                cursor: default;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <span style="color: #64748b;">${activityLabel}</span>
+                <span style="
+                    background: white;
+                    border-radius: 50%;
+                    width: 22px;
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #8b5cf6;
+                    border: 2px solid #8b5cf6;
+                    margin-left: 2px;
+                ">${count}</span>
+            </div>
+        `;
+    }).join('');
+
+    console.log('Team activity pills rendered successfully');
 }
+
+
+// Team Activities Modal Functions
+function openAllTeamActivitiesModal() {
+    const modal = document.getElementById('all-team-activities-modal');
+    if (modal) {
+        renderAllTeamActivitiesList();
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeAllTeamActivitiesModal() {
+    const modal = document.getElementById('all-team-activities-modal');
+    if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+function renderAllTeamActivitiesList() {
+    const container = document.getElementById('all-team-activities-list');
+    if (!container || !window.allTeamActivitiesData) return;
+
+    const activities = window.allTeamActivitiesData;
+
+    container.innerHTML = activities.map(item => {
+        const activityLabel = item.activity;
+        const count = item.count;
+        
+        return `
+            <div style="
+                background: #f1f5f9;
+                border: 2px solid #e2e8f0;
+                border-radius: 16px;
+                padding: 16px 20px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: all 0.2s;
+            " onmouseover="this.style.background='#e2e8f0';" 
+               onmouseout="this.style.background='#f1f5f9';">
+                <div style="flex: 1;">
+                    <div style="font-size: 18px; font-weight: 600; color: #334155;">${activityLabel}</div>
+                    <div style="font-size: 14px; color: #64748b; margin-top: 2px;">${count} ${count === 1 ? 'entry' : 'entries'}</div>
+                </div>
+                <span style="
+                    background: white;
+                    border-radius: 50%;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #8b5cf6;
+                    border: 2px solid #8b5cf6;
+                ">${count}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+// Export modal functions to window
+window.openAllTeamActivitiesModal = openAllTeamActivitiesModal;
+window.closeAllTeamActivitiesModal = closeAllTeamActivitiesModal;

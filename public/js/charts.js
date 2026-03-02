@@ -533,7 +533,7 @@ async function renderActivityChart(logs) {
     console.log('Final activity counts:', actCount);
     console.log('Number of unique activities:', Object.keys(actCount).length);
 
-    const sorted = Object.entries(actCount).sort((a, b) => b[1] - a[1]).slice(0, 8);
+    const sorted = Object.entries(actCount).sort((a, b) => b[1] - a[1]);
 
     if (sorted.length === 0) {
         console.log('❌ No activities to display - hiding chart');
@@ -546,94 +546,87 @@ async function renderActivityChart(logs) {
 
     console.log('✅ Top activities to display:', sorted);
 
+    // Store all activities globally for modal
+    window.allActivitiesData = { sorted, activities };
+
     // Show the card
     const card = document.getElementById('top-activities-card');
     if (card) {
         card.style.display = 'block';
     }
 
-    // Map activity labels to emojis
-    const labels = sorted.map(s => {
-        const activity = activities.find(a => a.label === s[0]);
-        const emoji = activity ? activity.emoji : '📊';
-        console.log(`Mapping "${s[0]}" to emoji:`, emoji, activity);
-        return emoji;
-    });
+    // Destroy old chart if exists
+    if (actChart) {
+        actChart.destroy();
+        actChart = null;
+    }
 
-    console.log('Final labels (emojis):', labels);
-
-    if (actChart) actChart.destroy();
-    const ctx = document.getElementById('activity-chart');
-    if (!ctx) {
-        console.error('❌ Canvas element not found');
+    // Get container
+    const container = document.getElementById('activity-chart');
+    if (!container) {
+        console.error('❌ Container element not found');
         return;
     }
 
-    console.log('Creating chart with data:', {
-        labels,
-        values: sorted.map(s => s[1])
-    });
+    // Clear container and render pills (limit to 6)
+    const displayLimit = 6;
+    const displayActivities = sorted.slice(0, displayLimit);
+    const hasMore = sorted.length > displayLimit;
+    
+    // Show/hide "More >" link
+    const moreLink = document.getElementById('view-all-activities-link');
+    if (moreLink) {
+        moreLink.style.display = hasMore ? 'flex' : 'none';
+    }
+    
+    container.style.display = 'flex';
+    container.style.flexWrap = 'wrap';
+    container.style.gap = '10px';
+    container.style.padding = '10px 0';
+    container.style.justifyContent = 'flex-start';
+    
+    container.innerHTML = displayActivities.map(([activityLabel, count]) => {
+        const activity = activities.find(a => a.label === activityLabel);
+        const emoji = activity ? activity.emoji : '📊';
+        
+        return `
+            <div style="
+                position: relative;
+                background: #f1f5f9;
+                border: 2px solid #e2e8f0;
+                border-radius: 32px;
+                padding: 10px 20px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                color: #334155;
+                transition: all 0.2s;
+                cursor: default;
+            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" 
+               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none';">
+                <span style="font-size: 20px;">${emoji}</span>
+                <span style="color: #64748b;">${activityLabel}</span>
+                <span style="
+                    background: white;
+                    border-radius: 50%;
+                    width: 22px;
+                    height: 22px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #8b5cf6;
+                    border: 2px solid #8b5cf6;
+                    margin-left: 2px;
+                ">${count}</span>
+            </div>
+        `;
+    }).join('');
 
-    actChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                data: sorted.map(s => s[1]),
-                backgroundColor: 'rgba(139, 92, 246, 0.6)',
-                borderColor: '#8b5cf6',
-                borderWidth: 1,
-                borderRadius: 8
-            }],
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: true,
-            indexAxis: 'y',
-            scales: {
-                x: {
-                    ticks: {
-                        color: 'rgba(0, 0, 0, 0.5)',
-                        stepSize: 1,
-                        precision: 0
-                    },
-                    grid: { color: 'rgba(0, 0, 0, 0.06)' }
-                },
-                y: {
-                    ticks: {
-                        color: 'rgba(0, 0, 0, 0.5)',
-                        font: { size: 20 }
-                    },
-                    grid: { display: false }
-                },
-            },
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(0,0,0,0.9)',
-                    titleColor: '#fff',
-                    bodyColor: '#fff',
-                    borderColor: 'rgba(255,255,255,0.2)',
-                    borderWidth: 1,
-                    padding: 12,
-                    displayColors: false,
-                    callbacks: {
-                        title: function (context) {
-                            const idx = context[0].dataIndex;
-                            const activityLabel = sorted[idx][0];
-                            const activity = activities.find(a => a.label === activityLabel);
-                            return activity ? `${activity.emoji} ${activity.label}` : activityLabel;
-                        },
-                        label: function (context) {
-                            return `Count: ${context.parsed.x}`;
-                        }
-                    }
-                }
-            },
-        },
-    });
-
-    console.log('✅ Activity chart rendered successfully');
+    console.log('✅ Activity pills rendered successfully');
     console.log('=== END ACTIVITY CHART DEBUG ===');
 }
 
@@ -1141,3 +1134,70 @@ window.selectYearMood = selectYearMood;
 window.navigateYear = navigateYear;
 window.navigateMonth = navigateMonth;
 window.renderMonthPixels = renderMonthPixels;
+
+// All Activities Modal Functions
+function openAllActivitiesModal() {
+    const modal = document.getElementById('all-activities-modal');
+    if (modal) {
+        renderAllActivitiesList();
+        modal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeAllActivitiesModal() {
+    const modal = document.getElementById('all-activities-modal');
+    if (modal) {
+        modal.classList.remove('open');
+        document.body.style.overflow = '';
+    }
+}
+
+function renderAllActivitiesList() {
+    const container = document.getElementById('all-activities-list');
+    if (!container || !window.allActivitiesData) return;
+
+    const { sorted, activities } = window.allActivitiesData;
+
+    container.innerHTML = sorted.map(([activityLabel, count]) => {
+        const activity = activities.find(a => a.label === activityLabel);
+        const emoji = activity ? activity.emoji : '📊';
+        
+        return `
+            <div style="
+                background: #f1f5f9;
+                border: 2px solid #e2e8f0;
+                border-radius: 16px;
+                padding: 16px 20px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                transition: all 0.2s;
+            " onmouseover="this.style.background='#e2e8f0';" 
+               onmouseout="this.style.background='#f1f5f9';">
+                <span style="font-size: 32px;">${emoji}</span>
+                <div style="flex: 1;">
+                    <div style="font-size: 18px; font-weight: 600; color: #334155;">${activityLabel}</div>
+                    <div style="font-size: 14px; color: #64748b; margin-top: 2px;">${count} ${count === 1 ? 'entry' : 'entries'}</div>
+                </div>
+                <span style="
+                    background: white;
+                    border-radius: 50%;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #8b5cf6;
+                    border: 2px solid #8b5cf6;
+                ">${count}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+// Export modal functions
+window.openAllActivitiesModal = openAllActivitiesModal;
+window.closeAllActivitiesModal = closeAllActivitiesModal;

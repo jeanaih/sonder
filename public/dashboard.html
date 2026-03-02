@@ -1,0 +1,1471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Sonder Dashboard — Live team mood tracking in real-time.">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Sonder — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+
+<body>
+
+    <!-- ─── Loading Screen ─────────────────────────────────────────── -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-video-container">
+            <img id="loading-logo" src="/assets/logo/logo.png" alt="Sonder Logo" style="width: 220px; height: auto;">
+        </div>
+    </div>
+
+
+    <!-- ─── Toast Container ───────────────────────────────────── -->
+    <div id="toast-container"></div>
+
+    <!-- Gooey Filter for FAB Morph -->
+    <svg xmlns="http://www.w3.org/1999/xlink" style="display:none;">
+        <defs>
+            <filter id="goo">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -7"
+                    result="goo" />
+                <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+            </filter>
+        </defs>
+    </svg>
+
+    <!-- ─── Top Bar (Month Navigator) ────────────────────────── -->
+    <header class="topbar">
+        <h1 class="topbar-month" id="current-month" onclick="openMonthPicker()">
+            <span data-i18n="current_month_label">MARCH 2026</span>
+            <i class="bi bi-chevron-down"
+                style="font-size: 0.8rem; margin-left: 8px; transition: transform 0.3s ease;"></i>
+        </h1>
+    </header>
+
+
+
+    <!-- ─── Main Content ─────────────────────────────────────── -->
+    <main class="main-content">
+
+        <!-- ═══ TAB: Entries ═══════════════════════════════════ -->
+        <section id="tab-entries" class="tab-page active">
+            <!-- Feed Filter Row (Side-by-Side) -->
+            <div class="filter-row-container">
+                <div class="feed-filter-pill filter-all" id="feed-filter-pill">
+                    <button class="filter-btn active" id="filter-all" onclick="setFeedFilter('all')">
+                        <i class="bi bi-people-fill"></i> <span data-i18n="filter_all">All</span>
+                    </button>
+                    <button class="filter-btn" id="filter-me" onclick="setFeedFilter('me')">
+                        <i class="bi bi-person-fill"></i> <span data-i18n="filter_me">Me</span>
+                    </button>
+                    <div class="filter-indicator"></div>
+                </div>
+
+                <input type="date" id="feed-date-picker" onchange="onDateInputChange(this.value)"
+                    style="position:absolute; opacity:0; width:1px; height:1px; z-index:-1; border:none;">
+            </div>
+
+            <!-- How are you? Quick Card (shown when no entries today) -->
+            <div class="how-are-you-card" id="quick-mood-card" onclick="openQuickMoodSelector()" style="display: none;">
+                <div class="how-are-you-icon">
+                    <svg width="72" height="72" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <path d="M8 14s1.5 2 4 2 4-2 4-2" />
+                        <line x1="9" y1="9" x2="9.01" y2="9" />
+                        <line x1="15" y1="9" x2="15.01" y2="9" />
+                    </svg>
+                </div>
+                <div class="how-are-you-header">
+                    <div class="how-are-you-title" data-i18n="how_are_you">How are you today?</div>
+                </div>
+            </div>
+
+            <div id="entries-list" class="entries-list">
+                <div class="first-entry-msg">
+                    <p data-i18n="first_entry_msg">Pick a mood to create your first entry!</p>
+                    <span class="first-emoji">✌️</span>
+                </div>
+            </div>
+
+
+        </section>
+
+        <!-- ═══ TAB: Calendar ══════════════════════════════════ -->
+        <section id="tab-calendar" class="tab-page">
+            <div class="card" style="padding: 0;">
+                <div class="calendar-header">
+                    <div class="calendar-days-header">
+                        <span class="cal-day" data-i18n="sun">Sun</span>
+                        <span class="cal-day" data-i18n="mon">Mon</span>
+                        <span class="cal-day" data-i18n="tue">Tue</span>
+                        <span class="cal-day" data-i18n="wed">Wed</span>
+                        <span class="cal-day" data-i18n="thu">Thu</span>
+                        <span class="cal-day" data-i18n="fri">Fri</span>
+                        <span class="cal-day" data-i18n="sat">Sat</span>
+                    </div>
+                </div>
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Calendar cells will be injected here via JS -->
+                </div>
+            </div>
+
+            <!-- Mood Count Summary (Daylio style) -->
+            <div class="card" style="margin-top: 10px;">
+                <div style="margin-bottom: 20px;">
+                    <h3 class="card-label" style="font-size: 1.2rem; color: var(--text); margin-bottom: 2px;"
+                        data-i18n="mood_count">Mood
+                        Count</h3>
+                </div>
+                <!-- Semi circle donut progress placeholder -->
+                <div class="mood-donut-container">
+                    <div class="mood-donut-arc"></div>
+                    <div class="mood-donut-value">0</div>
+                </div>
+                <!-- Mood bottom counts -->
+                <div class="mood-count-stats" id="mood-count-stats">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ TAB: Stats ═════════════════════════════════════ -->
+        <section id="tab-stats" class="tab-page">
+            <div class="card streak-card" id="streak-card">
+                <div class="streak-header">
+                    <h3 class="card-label streak-title" data-i18n="days_in_a_row">Days in a Row</h3>
+                </div>
+                <div class="streak-timeline-container">
+                    <div class="streak-timeline-wrapper">
+                        <div class="streak-line"></div>
+                        <div id="streak-days" class="streak-days">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+                    <div class="streak-current-pill">
+                        <span id="current-streak-count">0</span>
+                    </div>
+                </div>
+                <div class="streak-longest">
+                    🏆 <span data-i18n="longest_chain">Longest Chain</span>: <span id="longest-streak-count">0</span>
+                </div>
+            </div>
+
+            <div class="card" id="month-pixels-card" style="margin-bottom: 20px;">
+                <h3 class="card-label" data-i18n="month_in_pixels">Month in Pixels</h3>
+
+                <div class="month-pixels-header">
+                    <button class="month-nav-btn" onclick="navigateMonth(-1)">
+                        <i class="bi bi-chevron-left"></i>
+                    </button>
+                    <span id="month-display-title" class="month-display-title">---</span>
+                    <button class="month-nav-btn" id="month-next-btn" onclick="navigateMonth(1)">
+                        <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="month-pixels-container">
+                    <div class="month-pixels-weekdays">
+                        <span data-i18n="s_short">S</span><span data-i18n="m_short">M</span><span
+                            data-i18n="t_short">T</span><span data-i18n="w_short">W</span><span
+                            data-i18n="t_short_2">T</span><span data-i18n="f_short">F</span><span
+                            data-i18n="s_short_2">S</span>
+                    </div>
+                    <div id="month-pixels-grid" class="month-pixels-grid">
+                        <!-- Generated by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div style="margin-bottom: 20px;">
+                    <h3 class="card-label" style="font-size: 1.2rem; color: var(--text); margin-bottom: 2px;"
+                        data-i18n="mood_chart">Mood Chart
+                    </h3>
+                </div>
+                <div class="chart-wrap"><canvas id="mood-chart"></canvas></div>
+            </div>
+
+            <div class="card">
+                <h3 class="card-label" data-i18n="mood_dist">Mood Distribution</h3>
+                <div class="chart-wrap"><canvas id="mood-dist-chart"></canvas></div>
+            </div>
+            <div class="card" id="top-activities-card">
+                <h3 class="card-label">Top Activities</h3>
+                <div class="chart-wrap"><canvas id="activity-chart"></canvas></div>
+            </div>
+
+            <!-- View Year Statistics Button -->
+            <button class="view-year-stats-btn" onclick="toggleYearStatsView()">
+                <div class="view-year-stats-content">
+                    <div class="view-year-stats-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                            <line x1="16" y1="2" x2="16" y2="6" />
+                            <line x1="8" y1="2" x2="8" y2="6" />
+                            <line x1="3" y1="10" x2="21" y2="10" />
+                        </svg>
+                    </div>
+                    <div class="view-year-stats-text">
+                        <span class="view-year-stats-title" data-i18n="view_year_stats">View Year Statistics</span>
+                        <span class="view-year-stats-subtitle" data-i18n="see_mood_trends">See your mood trends for
+                            2026</span>
+                    </div>
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+            </button>
+        </section>
+
+        <!-- ═══ YEAR STATS OVERLAY ═════════════════════════════ -->
+        <div id="year-stats-overlay" class="year-stats-overlay">
+            <div class="year-stats-container">
+                <!-- Header -->
+                <div class="year-stats-header">
+                    <button class="year-stats-back-btn" onclick="toggleYearStatsView()">
+                        <i class="bi bi-arrow-left"></i>
+                    </button>
+                    <div class="year-stats-nav">
+                        <button class="year-nav-btn" id="year-prev-btn" onclick="navigateYear(-1)">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <h2 class="year-stats-title" id="year-stats-title" data-i18n="year_2026">2026</h2>
+                        <button class="year-nav-btn" id="year-next-btn" onclick="navigateYear(1)" disabled>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                    <div style="width: 40px;"></div>
+                </div>
+
+                <!-- Content -->
+                <div class="year-stats-content">
+                    <!-- Year in Pixels Card -->
+                    <div class="card">
+                        <div style="margin-bottom: 20px;">
+                            <h3 class="card-label" style="font-size: 1.2rem; color: var(--text); margin-bottom: 0;"
+                                data-i18n="year_in_pixels">Year
+                                in Pixels</h3>
+                        </div>
+
+                        <!-- Mood selector dropdown -->
+                        <div class="year-mood-selector">
+                            <button class="year-mood-btn" id="year-mood-btn" onclick="toggleYearMoodDropdown()">
+                                <span id="year-selected-mood-emoji">😊</span>
+                                <span id="year-selected-mood-label">average mood (3×)</span>
+                                <i class="bi bi-chevron-down"></i>
+                            </button>
+                            <div class="year-mood-dropdown" id="year-mood-dropdown">
+                                <div class="year-mood-option" onclick="selectYearMood('average')">
+                                    <span>😊</span>
+                                    <span>average mood</span>
+                                </div>
+                                <div class="year-mood-option" onclick="selectYearMood('rad')">
+                                    <span>😄</span>
+                                    <span>rad</span>
+                                </div>
+                                <div class="year-mood-option" onclick="selectYearMood('good')">
+                                    <span>🙂</span>
+                                    <span>good</span>
+                                </div>
+                                <div class="year-mood-option" onclick="selectYearMood('meh')">
+                                    <span>😐</span>
+                                    <span>meh</span>
+                                </div>
+                                <div class="year-mood-option" onclick="selectYearMood('bad')">
+                                    <span>😔</span>
+                                    <span>bad</span>
+                                </div>
+                                <div class="year-mood-option" onclick="selectYearMood('awful')">
+                                    <span>😢</span>
+                                    <span>awful</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Year Pixels Grid -->
+                        <div class="year-pixels-container">
+                            <div class="year-pixels-months">
+                                <span>J</span><span>F</span><span>M</span><span>A</span><span>M</span><span>J</span>
+                                <span>J</span><span>A</span><span>S</span><span>O</span><span>N</span><span>D</span>
+                            </div>
+                            <div class="year-pixels-grid" id="year-pixels-grid">
+                                <!-- Generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Mood count summary at bottom -->
+                        <div class="year-mood-summary" id="year-mood-summary">
+                            <!-- Generated by JS -->
+                        </div>
+
+                        <p class="year-pixels-hint" data-i18n="year_pixels_hint">Tap mood to highlight it on the chart
+                        </p>
+                    </div>
+
+                    <!-- Monthly Mood Chart -->
+                    <div class="card">
+                        <div style="margin-bottom: 20px;">
+                            <h3 class="card-label" style="font-size: 1.2rem; color: var(--text); margin-bottom: 2px;"
+                                data-i18n="monthly_mood_chart">
+                                Monthly Mood Chart</h3>
+                        </div>
+                        <div class="chart-wrap"><canvas id="year-mood-chart"></canvas></div>
+                        <p id="year-chart-hint" class="year-pixels-hint"
+                            style="margin-top: 12px; text-align: center; color: var(--text-sub); font-size: 0.85rem;">
+                            <!-- Populated by JS -->
+                        </p>
+                    </div>
+
+                    <!-- Year Mood Distribution -->
+                    <div class="card">
+                        <h3 class="card-label" data-i18n="year_mood_dist">Year Mood Distribution</h3>
+                        <div class="chart-wrap"><canvas id="year-mood-dist-chart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ TAB: Team ══════════════════════════════════════ -->
+        <section id="tab-team" class="tab-page">
+            <!-- Team Header -->
+            <div class="team-header">
+                <!-- Leave Organization Button (for non-admin members only) -->
+                <button class="leave-org-btn-team hidden" id="leave-org-btn-team" onclick="confirmLeaveOrganization()">
+                    <i class="bi bi-box-arrow-left"></i>
+                </button>
+                <div class="team-org-info">
+                    <h2 class="team-org-name" id="team-org-name">Loading...</h2>
+                    <div class="team-status-bar">
+                        <span class="team-online-count"><span id="team-online-count">0</span> <span
+                                data-i18n="online">online</span></span>
+                        <span class="team-divider">·</span>
+                        <span class="team-total-count"><span id="team-total-count">0</span> <span
+                                data-i18n="members">members</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Grid -->
+            <div id="team-grid" class="team-grid">
+                <div class="empty-msg"><span>👥</span>
+                    <p data-i18n="connecting_team">Connecting to your team...</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ TAB: More ══════════════════════════════════════ -->
+        <section id="tab-more" class="tab-page">
+            <!-- User Info Section -->
+            <div class="more-user-section">
+                <div class="user-avatar-large" id="user-avatar-large">
+                    <span id="user-avatar-letter-large">A</span>
+                </div>
+                <span id="user-name-more" class="user-name-large">@User</span>
+                <div class="conn-status">
+                    <span id="connection-dot-more" class="conn-dot conn-offline"></span>
+                    <span class="conn-label" data-i18n="connected">Connected</span>
+                </div>
+            </div>
+
+            <!-- Notification Logs (Individual & Team) -->
+            <div class="notification-center card" style="margin-bottom: 20px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h3 class="card-label"
+                        style="margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px;">
+                        <i class="bi bi-bell-fill" style="color: var(--accent-primary);"></i>
+                        <span data-i18n="recent_notifications">Recent Notifications</span>
+                        <span id="notification-badge" style="
+                            display: none;
+                            background: #ef4444;
+                            color: white;
+                            font-size: 11px;
+                            padding: 2px 6px;
+                            border-radius: 10px;
+                            font-weight: bold;
+                        "></span>
+                    </h3>
+                    <button onclick="clearNotificationHistory()" style="
+                        background: none;
+                        border: none;
+                        color: var(--text-muted);
+                        font-size: 12px;
+                        cursor: pointer;
+                        padding: 4px 8px;
+                    ">Clear all</button>
+                </div>
+                <!-- This will be populated by JS -->
+                <div id="notification-history-list"
+                    style="display: flex; flex-direction: column; gap: 8px; max-height: 250px; overflow-y: auto;">
+                    <div style="text-align: center; color: var(--text-muted); padding: 15px 0; font-size: 0.9rem;">
+                        No new notifications
+                    </div>
+                </div>
+            </div>
+
+            <!-- Menu Items -->
+            <div class="more-menu">
+                <!-- Admin Panel Button -->
+                <button id="admin-panel-btn" class="more-menu-item admin-panel-btn hidden" onclick="openAdminPanel()">
+                    <i class="bi bi-key-fill"></i>
+                    <span data-i18n="admin_panel">Admin Panel</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- Group Code (for members when invite is enabled) -->
+                <div id="member-invite-section" class="member-invite-section hidden">
+                    <h3 class="member-invite-title" data-i18n="group_invite_code">Group Invite Code</h3>
+                    <div class="member-code-display">
+                        <span id="member-invite-code" class="member-code-text">------</span>
+                        <button class="btn-copy-code" onclick="copyMemberInviteCode()">
+                            <i class="bi bi-clipboard"></i>
+                        </button>
+                    </div>
+                    <p class="member-invite-hint" data-i18n="share_code_hint">Share this code to invite others to your
+                        team</p>
+                </div>
+
+                <!-- Team Status -->
+                <button class="more-menu-item" onclick="switchTab('team')">
+                    <i class="bi bi-people-fill"></i>
+                    <span data-i18n="team_status">Team Status</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- Goals -->
+                <button class="more-menu-item" onclick="openGoalsModal()">
+                    <i class="bi bi-bullseye"></i>
+                    <span data-i18n="goals">Goals</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- Important Days -->
+                <button class="more-menu-item" onclick="openImportantDaysModal()">
+                    <i class="bi bi-star-fill"></i>
+                    <span data-i18n="important_days">Important Days</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- Reminders -->
+                <button class="more-menu-item" onclick="openRemindersSettings()">
+                    <i class="bi bi-bell-fill"></i>
+                    <span data-i18n="reminders">Reminders</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- Customize (Emotions & Activities) -->
+                <button class="more-menu-item" onclick="openMoodEdit()">
+                    <i class="bi bi-pencil-square"></i>
+                    <span data-i18n="customize_activity">Customize Activity</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- Settings -->
+                <button class="more-menu-item" onclick="openSettingsModal()">
+                    <i class="bi bi-gear-fill"></i>
+                    <span data-i18n="settings">Settings</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <!-- About -->
+                <button class="more-menu-item" onclick="openAboutModal()">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <span data-i18n="about">About</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                <!-- Logout -->
+                <button class="more-menu-item logout-item" id="logout-btn-more">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span data-i18n="logout">Logout</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+
+            <!-- Settings Modal -->
+            <div id="settings-modal" class="mood-modal">
+                <div class="mood-modal-overlay" onclick="closeSettingsModal()"></div>
+                <div class="mood-modal-sheet">
+                    <div class="modal-header">
+                        <button type="button" class="modal-back-btn" onclick="closeSettingsModal()">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <h2 class="sheet-title" data-i18n="settings">Settings</h2>
+                        <div style="width: 40px;"></div>
+                    </div>
+                    <div class="modal-content">
+                        <div class="settings-list">
+                            <!-- Language -->
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <i class="bi bi-translate"></i>
+                                    <span data-i18n="language">Language</span>
+                                </div>
+                                <select class="settings-select" id="language-select">
+                                    <option value="en">English</option>
+                                    <option value="fil">Filipino</option>
+                                </select>
+                            </div>
+
+                            <!-- Theme Color -->
+                            <button class="settings-item" onclick="closeSettingsModal(); openThemeSelector();">
+                                <div class="settings-item-info">
+                                    <i class="bi bi-palette-fill"></i>
+                                    <span data-i18n="theme_color">Theme Color</span>
+                                </div>
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+
+                            <!-- PIN Lock -->
+                            <div class="settings-item">
+                                <div class="settings-item-info">
+                                    <i class="bi bi-lock-fill"></i>
+                                    <div>
+                                        <div data-i18n="pin_lock">PIN Lock</div>
+                                        <div class="settings-subtitle" data-i18n="coming_soon">Coming soon</div>
+                                    </div>
+                                </div>
+                                <label class="settings-toggle">
+                                    <input type="checkbox" id="pin-lock-toggle" disabled>
+                                    <span class="settings-toggle-slider"></span>
+                                </label>
+                            </div>
+
+                            <!-- Share App -->
+                            <button class="settings-item" disabled>
+                                <div class="settings-item-info">
+                                    <i class="bi bi-share-fill"></i>
+                                    <div>
+                                        <div data-i18n="share_app">Share App</div>
+                                        <div class="settings-subtitle" data-i18n="coming_soon">Coming soon</div>
+                                    </div>
+                                </div>
+                                <i class="bi bi-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Modal -->
+            <div id="about-modal" class="mood-modal">
+                <div class="mood-modal-overlay" onclick="closeAboutModal()"></div>
+                <div class="mood-modal-sheet">
+                    <div class="modal-header">
+                        <button type="button" class="modal-back-btn" onclick="closeAboutModal()">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <h2 class="sheet-title" data-i18n="about">About</h2>
+                        <div style="width: 40px;"></div>
+                    </div>
+                    <div class="modal-content">
+                        <div class="about-content">
+                            <div class="about-logo">
+                                <img src="/assets/logo/logo.png" alt="Sonder Logo" style="width: 120px; height: auto;">
+                            </div>
+                            <p class="about-version"><span data-i18n="version">Version</span> 1.0.0</p>
+                            <p class="about-description" data-i18n="about_desc">
+                                Track your mood and activities with your team in real-time.
+                                Build better habits and understand your emotional patterns.
+                            </p>
+                            <div class="about-links">
+                                <a href="#" class="about-link" data-i18n="privacy_policy">Privacy Policy</a>
+                                <a href="#" class="about-link" data-i18n="terms_service">Terms of Service</a>
+                                <a href="#" class="about-link" data-i18n="support">Support</a>
+                            </div>
+                            <p class="about-copyright">© 2026 Sonder. <span data-i18n="all_rights">All rights
+                                    reserved.</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reminders Settings Modal -->
+            <div id="reminders-modal" class="mood-modal">
+                <div class="mood-modal-overlay" onclick="closeRemindersSettings()"></div>
+                <div class="mood-modal-sheet">
+                    <div class="modal-header">
+                        <button type="button" class="modal-back-btn" onclick="closeRemindersSettings()">
+                            <i class="bi bi-arrow-left"></i>
+                        </button>
+                        <h2 class="sheet-title" data-i18n="reminders">Reminders</h2>
+                        <div style="width: 40px;"></div>
+                    </div>
+                    <div class="modal-content" style="padding: 20px;">
+                        <div class="reminder-simple-card">
+                            <h3 class="reminder-simple-title" data-i18n="daily_checkin">Daily check-in reminder</h3>
+                            <p class="reminder-simple-subtitle" data-i18n="remind_once_day">We'll remind you once a day
+                                to log your mood.</p>
+
+                            <label class="reminder-simple-toggle">
+                                <input type="checkbox" id="reminder-enabled">
+                                <span class="reminder-simple-toggle-slider"></span>
+                            </label>
+
+                            <div class="reminder-simple-time">
+                                <label class="reminder-time-label" data-i18n="reminder_time">Reminder time</label>
+                                <input type="time" id="reminder-time" class="reminder-time-input">
+                            </div>
+
+                            <!-- Test Notification Button -->
+                            <button type="button" onclick="testGoalNotification()" style="
+                                width: 100%;
+                                margin-top: 16px;
+                                padding: 12px;
+                                background: var(--d-primary);
+                                color: white;
+                                border: none;
+                                border-radius: 12px;
+                                font-weight: 600;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                gap: 8px;
+                            ">
+                                <i class="bi bi-bell-fill"></i>
+                                Test Notification
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        </div>
+
+        <!-- Admin Panel Modal -->
+        <div id="admin-panel-modal" class="mood-modal">
+            <div class="mood-modal-overlay" onclick="closeAdminPanel()"></div>
+            <div class="mood-modal-sheet">
+                <div class="modal-header">
+                    <button type="button" class="modal-back-btn" onclick="closeAdminPanel()">
+                        <i class="bi bi-arrow-left"></i>
+                    </button>
+                    <h2 class="sheet-title">Admin Panel</h2>
+                    <div style="width: 40px;"></div>
+                </div>
+                <div class="modal-content">
+                    <!-- Organization Code -->
+                    <div class="admin-section">
+                        <h3 class="admin-section-title">Group Code</h3>
+                        <div class="admin-code-display">
+                            <span id="admin-org-code" class="org-code-text">------</span>
+                            <button class="btn-copy-code" onclick="copyAdminCode()">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                        <p class="admin-hint">Share this code with new admins</p>
+                    </div>
+
+                    <!-- Settings -->
+                    <div class="admin-section">
+                        <h3 class="admin-section-title">Settings</h3>
+
+                        <!-- Allow Members to Invite -->
+                        <div class="admin-setting-item">
+                            <div class="admin-setting-info">
+                                <div class="admin-setting-label">Members can invite</div>
+                                <div class="admin-setting-desc">Allow members to invite others using group code</div>
+                            </div>
+                            <label class="settings-toggle">
+                                <input type="checkbox" id="members-can-invite-toggle"
+                                    onchange="toggleMembersCanInvite(this.checked)">
+                                <span class="settings-toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="admin-section">
+                        <h3 class="admin-section-title">Actions</h3>
+
+                        <button class="admin-action-btn" onclick="openTeamStats()">
+                            <i class="bi bi-graph-up"></i>
+                            <span>Team Statistics</span>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+
+                        <button class="admin-action-btn" onclick="openManageMembers()">
+                            <i class="bi bi-people"></i>
+                            <span>Manage Members</span>
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Manage Members Modal -->
+        <div id="manage-members-modal" class="mood-modal">
+            <div class="mood-modal-overlay" onclick="closeManageMembers()"></div>
+            <div class="mood-modal-sheet">
+                <div class="modal-header">
+                    <button type="button" class="modal-back-btn" onclick="closeManageMembers()">
+                        <i class="bi bi-arrow-left"></i>
+                    </button>
+                    <h2 class="sheet-title">Manage Members</h2>
+                    <div style="width: 40px;"></div>
+                </div>
+                <div class="modal-content">
+                    <div id="members-list" class="members-manage-list">
+                        <!-- Members will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Stats Modal -->
+        <div id="team-stats-modal" class="mood-modal">
+            <div class="mood-modal-overlay" onclick="closeTeamStats()"></div>
+            <div class="mood-modal-sheet team-stats-sheet">
+                <div class="modal-header">
+                    <button type="button" class="modal-back-btn" onclick="closeTeamStats()">
+                        <i class="bi bi-arrow-left"></i>
+                    </button>
+                    <h2 class="sheet-title">Team Statistics</h2>
+                    <div style="width: 40px;"></div>
+                </div>
+                <div class="modal-content">
+                    <!-- Time Range Selector -->
+                    <div class="stats-timerange-container"
+                        style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; background: white; padding: 12px 18px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.04);">
+                        <i class="bi bi-calendar3" style="color: var(--accent-primary); font-size: 1.1rem;"></i>
+                        <label for="stats-range-select"
+                            style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0;">Time
+                            Range:</label>
+                        <select id="stats-range-select" class="form-select" onchange="updateTeamStatsRange(this.value)"
+                            style="flex: 1; border: none; font-weight: 700; color: var(--text); background: transparent; cursor: pointer; outline: none; font-size: 1rem;">
+                            <option value="7">Last 7 Days</option>
+                            <option value="30" selected>Last 30 Days</option>
+                            <option value="90">Last 90 Days</option>
+                            <option value="all">All Time</option>
+                        </select>
+                        <i class="bi bi-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+                    </div>
+
+                    <!-- Team Activity Summary Card -->
+                    <div class="card team-summary-card">
+                        <div class="team-summary-header">
+                            <div>
+                                <h3 class="card-label">Team Overview</h3>
+                                <p id="stats-date-range-label" class="card-subtitle">Last 30 days performance</p>
+                            </div>
+                        </div>
+                        <div class="team-stat-grid">
+                            <div class="team-stat-item">
+                                <div class="team-stat-icon"
+                                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                    <i class="bi bi-journal-text"></i>
+                                </div>
+                                <div class="team-stat-value" id="total-entries">0</div>
+                                <div class="team-stat-label">Total Entries</div>
+                            </div>
+                            <div class="team-stat-item">
+                                <div class="team-stat-icon"
+                                    style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                    <i class="bi bi-graph-up"></i>
+                                </div>
+                                <div class="team-stat-value" id="avg-entries-per-day">0</div>
+                                <div class="team-stat-label">Avg per Day</div>
+                            </div>
+                            <div class="team-stat-item">
+                                <div class="team-stat-icon"
+                                    style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                    <i class="bi bi-person-check-fill"></i>
+                                </div>
+                                <div class="team-stat-value" id="active-members">0/0</div>
+                                <div class="team-stat-label">Active Members</div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Team Activity Streak (Pixels) -->
+                    <div class="card team-chart-card">
+                        <div class="chart-header" style="cursor: pointer;" onclick="toggleConsistencyIntervals()">
+                            <h3 class="card-label">
+                                <i class="bi bi-grid-3x3-gap-fill"
+                                    style="margin-right: 8px; color: var(--accent-primary);"></i>
+                                Consistency Intervals
+                            </h3>
+                            <i id="consistency-toggle-icon" class="bi bi-chevron-down"
+                                style="color: var(--text-muted); font-size: 1.2rem; transition: transform 0.3s ease;"></i>
+                        </div>
+                        <div id="team-streak-pixels" class="member-stats-list" style="padding-top: 5px;">
+                            <!-- Injected via JS -->
+                        </div>
+                    </div>
+
+                    <!-- Member Breakdown -->
+                    <div class="card team-chart-card" id="member-breakdown-section">
+                        <div class="chart-header" style="cursor: pointer;" onclick="toggleMemberBreakdown()">
+                            <h3 class="card-label">
+                                <i class="bi bi-person-lines-fill"
+                                    style="margin-right: 8px; color: var(--accent-primary);"></i>
+                                Member Breakdown
+                            </h3>
+                            <i id="breakdown-toggle-icon" class="bi bi-chevron-down"
+                                style="color: var(--text-muted); font-size: 1.2rem; transition: transform 0.3s ease;"></i>
+                        </div>
+                        <div id="member-stats-list" class="member-stats-list">
+                            <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                <i class="bi bi-hourglass-split"
+                                    style="font-size: 1.5rem; display: block; margin-bottom: 10px;"></i>
+                                Loading member stats...
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Team Mood Trends -->
+                    <div class="card team-chart-card" style="margin-bottom: 20px;">
+                        <div class="chart-header">
+                            <h3 class="card-label" style="font-size: 1.1rem; color: var(--text);">
+                                <i class="bi bi-activity" style="margin-right: 8px; color: var(--accent-primary);"></i>
+                                Team Mood Trends
+                            </h3>
+                            <p id="mood-trend-label" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
+                                Daily mood tracking over the past week</p>
+                        </div>
+                        <div class="chart-wrap"><canvas id="team-overall-mood-chart"></canvas></div>
+                    </div>
+
+                    <div class="card team-chart-card" style="margin-bottom: 20px;">
+                        <h3 class="card-label" data-i18n="team_mood_dist">Team Mood Distribution</h3>
+                        <div class="chart-wrap"><canvas id="team-overall-dist-chart"></canvas></div>
+                    </div>
+
+                    <div class="card team-chart-card">
+                        <h3 class="card-label" data-i18n="team_top_activities">Top Activities</h3>
+                        <div class="chart-wrap"><canvas id="team-overall-activity-chart"></canvas></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </section>
+
+        </div>
+        </div>
+        </div>
+        <!-- TAB: Videos ════════════════════════════════════ -->
+        <section id="tab-videos" class="tab-page">
+            <div class="video-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+                <button class="icon-btn" onclick="switchTab('more')">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <h2 class="sheet-title" style="margin: 0;">Video Library</h2>
+            </div>
+            <div class="video-grid" id="video-grid">
+                <div class="card video-card">
+                    <div class="video-placeholder">
+                        <video id="main-video" controls poster="/assets/video-placeholder.png">
+                            <source src="/assets/logo/sample.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <div class="video-info">
+                        <h3 class="video-title">Welcome to Sonder</h3>
+                        <p class="video-desc">A quick guide on how to track your mood and activities.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ─── Radial FAB Menu Overlay ───────────────────────────── -->
+    <div id="fab-menu-overlay" class="fab-menu-overlay" onclick="closeFabMenu()">
+        <div class="fab-menu-content" onclick="event.stopPropagation()">
+            <div class="fab-menu-item item-goal" style="--d: 0.1s" onclick="openGoalsModal()">
+                <div class="menu-icon"><i class="bi bi-bullseye"></i></div>
+            </div>
+            <div class="fab-menu-item item-important" style="--d: 0.15s" onclick="openImportantDaysModal()">
+                <div class="menu-icon"><i class="bi bi-star-fill"></i></div>
+            </div>
+            <div class="fab-menu-item item-today" style="--d: 0.2s" onclick="openQuickMoodSelector(); closeFabMenu();">
+                <div class="menu-icon"><i class="bi bi-clock-history"></i></div>
+            </div>
+            <div class="fab-menu-item item-yesterday" style="--d: 0.25s" onclick="openYesterdayEntry();">
+                <div class="menu-icon"><i class="bi bi-arrow-left"></i></div>
+            </div>
+            <div class="fab-menu-item item-other" style="--d: 0.3s" onclick="openOtherDayPicker();">
+                <div class="menu-icon"><i class="bi bi-calendar3"></i></div>
+            </div>
+
+            <!-- Close button -->
+            <button class="fab-close" onclick="toggleFabMenu()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- ─── Mood/Activity Customization Modal ────────────────── -->
+    <div id="customize-modal" class="mood-modal fullscreen-modal">
+        <div class="mood-modal-overlay" onclick="closeCustomizeModal()"></div>
+        <div class="mood-modal-sheet">
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeCustomizeModal()">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <h2 class="sheet-title" id="customize-title">Customize</h2>
+                <button type="button" class="modal-save-btn" onclick="saveCustomizations()">
+                    <i class="bi bi-check"></i>
+                </button>
+            </div>
+
+            <div class="modal-content">
+                <!-- Emotions Customization -->
+                <div class="customize-section" id="customize-emotions-section" style="display: none;">
+                    <div class="customize-header">
+                        <h3 class="section-title">Emotions</h3>
+                        <button type="button" class="btn-reset" onclick="resetEmotions()">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                    </div>
+                    <p class="customize-hint">Tap an emotion to edit it</p>
+                    <div id="customize-emotion-grid" class="customize-grid activity-style"></div>
+                    <button type="button" class="add-item-btn" onclick="addNewEmotionItem()">
+                        <i class="bi bi-plus-circle"></i> Add Emotion
+                    </button>
+                </div>
+
+                <!-- Activities Customization -->
+                <div class="customize-section" id="customize-activities-section" style="display: none;">
+                    <div class="customize-header">
+                        <h3 class="section-title">Activities</h3>
+                        <button type="button" class="btn-reset" onclick="resetActivities()">
+                            <i class="bi bi-arrow-clockwise"></i> Reset
+                        </button>
+                    </div>
+                    <p class="customize-hint">Tap an activity to edit it</p>
+                    <div id="customize-activity-grid" class="customize-grid activity-style"></div>
+                    <button type="button" class="add-item-btn" onclick="addNewActivityItem()">
+                        <i class="bi bi-plus-circle"></i> Add Activity
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Edit Item Modal (Unified with Emoji Picker) ─────── -->
+    <div id="edit-item-modal" class="mood-modal fullscreen-modal">
+        <div class="mood-modal-overlay" onclick="closeEditItemModal()"></div>
+        <div class="mood-modal-sheet edit-item-sheet">
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeEditItemModal()">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <h2 class="sheet-title" id="edit-item-title">Edit Item</h2>
+                <button type="button" class="modal-save-btn" onclick="saveEditedItem()">
+                    <i class="bi bi-check"></i>
+                </button>
+            </div>
+
+            <div class="edit-item-form">
+                <!-- Label Input -->
+                <div class="form-group">
+                    <label class="form-label">Label</label>
+                    <input type="text" id="edit-item-label" class="form-input" maxlength="16" placeholder="Enter label">
+                </div>
+
+                <!-- Emoji Picker Section -->
+                <div class="form-group">
+                    <label class="form-label">Choose Emoji</label>
+
+                    <!-- Current Selected Emoji -->
+                    <div class="selected-emoji-display">
+                        <div class="emoji-preview-large">
+                            <span id="emoji-preview-text">😀</span>
+                        </div>
+                        <input type="hidden" id="edit-item-emoji" value="">
+                    </div>
+
+                    <!-- Category Tabs -->
+                    <div class="emoji-categories"></div>
+
+                    <!-- Emoji Grid -->
+                    <div class="emoji-grid"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-danger" id="delete-item-btn" onclick="deleteCurrentItem()">
+                    <i class="bi bi-trash-fill"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Quick Mood Selector (First Step) ────────────────── -->
+    <div id="quick-mood-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeQuickMoodModal()"></div>
+        <div class="mood-modal-sheet quick-mood-sheet">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeQuickMoodModal()"
+                    style="background: transparent; border: 1px solid #2a2a2a;">
+                    <i class="bi bi-x"></i>
+                </button>
+                <h2 class="sheet-title">How are you?</h2>
+            </div>
+
+            <!-- Date and Time Selectors -->
+            <div class="quick-mood-datetime">
+                <button class="datetime-selector" onclick="document.getElementById('quick-date-picker').showPicker()">
+                    <i class="bi bi-calendar3"></i>
+                    <span id="quick-date-display">Today, February 27</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                <input type="date" id="quick-date-picker"
+                    style="position:absolute; visibility:hidden; width:0; height:0;">
+
+                <button class="datetime-selector" onclick="document.getElementById('quick-time-picker').showPicker()">
+                    <i class="bi bi-clock"></i>
+                    <span id="quick-time-display">1:14 PM</span>
+                    <i class="bi bi-chevron-down"></i>
+                </button>
+                <input type="time" id="quick-time-picker"
+                    style="position:absolute; visibility:hidden; width:0; height:0;">
+            </div>
+
+            <!-- Quick Mood Selection -->
+            <div class="quick-mood-grid" id="quick-mood-grid">
+                <!-- Will be populated by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Day Details Modal (View Entries for a specific day) ── -->
+    <div id="day-details-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeDayDetails()"></div>
+        <div class="mood-modal-sheet day-details-sheet">
+            <div class="sheet-handle"></div>
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeDayDetails()">
+                    <i class="bi bi-x"></i>
+                </button>
+                <div class="header-text" style="flex: 1; text-align: center;">
+                    <h2 class="sheet-title" id="day-details-title" style="margin-bottom: 2px;">Day History</h2>
+                    <p class="sheet-subtitle" id="day-details-subtitle"
+                        style="font-size: 0.85rem; color: var(--d-muted); margin: 0;">Date</p>
+                </div>
+                <div style="width: 40px;"></div> <!-- Spacer -->
+            </div>
+
+            <div class="modal-content" style="padding: 10px 0 20px; overflow-y: auto;">
+                <div id="day-entries-list" class="day-entries-list">
+                    <!-- Entries will be populated here -->
+                </div>
+            </div>
+
+            <div class="modal-footer" style="padding: 12px 20px 0;">
+                <button type="button" class="btn-primary" id="add-more-btn"
+                    style="width: 100%; border-radius: 16px; height: 54px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 0;">
+                    <i class="bi bi-plus-lg" style="font-size: 1.2rem;"></i> ADD ENTRY
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Mood Picker Modal (the "+" button opens this) ────── -->
+    <div id="mood-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeMoodModal()"></div>
+        <div class="mood-modal-sheet">
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeMoodModal()">
+                    <i class="bi bi-arrow-left"></i>
+                </button>
+                <h2 class="sheet-title">What have you been up to?</h2>
+                <button type="button" class="modal-save-btn" onclick="sendMoodEntry()">
+                    <i class="bi bi-check"></i>
+                </button>
+            </div>
+
+            <!-- Selected Mood Display -->
+            <div id="selected-mood-display" class="selected-mood-display"></div>
+
+            <!-- Modal Content -->
+            <div class="modal-content">
+                <!-- Emotions Section (Custom emotions, editable) -->
+                <div class="modal-section" id="emotions-section">
+                    <div class="section-header" onclick="toggleSection('emotions-section')">
+                        <h3 class="section-title">Emotions</h3>
+                        <div class="section-toggle">
+                            <button type="button" class="section-add-btn"
+                                onclick="event.stopPropagation(); openCustomizer('emotions')">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                            <button type="button" class="section-collapse-btn">
+                                <i class="bi bi-chevron-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <div id="emotion-grid" class="emotion-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Activities Section -->
+                <div class="modal-section" id="activities-section">
+                    <div class="section-header" onclick="toggleSection('activities-section')">
+                        <h3 class="section-title">Activities</h3>
+                        <div class="section-toggle">
+                            <button type="button" class="section-add-btn"
+                                onclick="event.stopPropagation(); openCustomizer('activities')">
+                                <i class="bi bi-plus"></i>
+                            </button>
+                            <button type="button" class="section-collapse-btn">
+                                <i class="bi bi-chevron-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <div id="activity-grid" class="activity-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Notes Section -->
+                <div class="modal-section" id="notes-section">
+                    <div class="section-header" onclick="toggleSection('notes-section')">
+                        <h3 class="section-title">Notes <span class="optional-tag">(optional)</span></h3>
+                        <div class="section-toggle">
+                            <button type="button" class="section-collapse-btn">
+                                <i class="bi bi-chevron-up"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="section-content">
+                        <textarea id="mood-note" class="note-input" placeholder="Add a short note..." maxlength="200"
+                            rows="3"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Month Picker Modal ────────────────────────────────── -->
+    <div id="month-picker-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeMonthPicker()"></div>
+        <div class="mood-modal-sheet month-picker-sheet-custom">
+            <div class="sheet-handle"></div>
+            <h2 class="sheet-title">Select Month</h2>
+            <div class="month-carousel-3d-wrapper">
+                <div class="month-carousel-3d" id="month-carousel-3d">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Goals Modal ────────────────────────────────────────── -->
+    <div id="goals-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeGoalsModal()"></div>
+        <div class="mood-modal-sheet">
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeGoalsModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+                <h2 class="sheet-title">Goals</h2>
+                <button type="button" class="modal-save-btn" id="goals-add-btn" onclick="showGoalForm()">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+
+            <div class="modal-content">
+                <!-- Goals List View -->
+                <div id="goals-list-view">
+                    <div class="goals-filter-tabs">
+                        <button class="goals-filter-tab active" data-filter="personal"
+                            onclick="filterGoals('personal')">
+                            <i class="bi bi-person"></i> Personal
+                        </button>
+                        <button class="goals-filter-tab" data-filter="team" onclick="filterGoals('team')">
+                            <i class="bi bi-people"></i> Team
+                        </button>
+                    </div>
+
+                    <div id="goals-list-container" class="goals-list-container">
+                        <!-- Goals will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Goal Form View (hidden by default) -->
+                <div id="goal-form-view" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Goal Title</label>
+                        <input type="text" id="goal-title" class="form-input"
+                            placeholder="Anong goal mo? (e.g. Mag-aral ng JS)" maxlength="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Description (Optional)</label>
+                        <textarea id="goal-description" class="note-input" placeholder="Add more details..."
+                            maxlength="300" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Visibility</label>
+                        <div class="goal-type-grid">
+                            <button type="button" class="goal-type-btn active" data-type="personal"
+                                onclick="selectGoalType('personal')">
+                                <i class="bi bi-person"></i> <span>Personal</span>
+                            </button>
+                            <button type="button" class="goal-type-btn" data-type="team"
+                                onclick="selectGoalType('team')">
+                                <i class="bi bi-people"></i> <span>Team</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reminder Frequency</label>
+                        <select id="goal-reminder-frequency" class="form-input" onchange="toggleCustomDays()">
+                            <option value="">No Reminder</option>
+                            <option value="daily">Every Day</option>
+                            <option value="custom">Custom Days</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="custom-days-group" style="display: none;">
+                        <label class="form-label">Select Days</label>
+                        <div class="days-picker">
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="0"> <span>Sun</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="1"> <span>Mon</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="2"> <span>Tue</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="3"> <span>Wed</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="4"> <span>Thu</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="5"> <span>Fri</span>
+                            </label>
+                            <label class="day-checkbox">
+                                <input type="checkbox" value="6"> <span>Sat</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="reminder-time-group" style="display: none;">
+                        <label class="form-label">Reminder Time</label>
+                        <input type="time" id="goal-reminder-time" class="form-input">
+                    </div>
+
+                    <div class="mood-actions-row">
+                        <button type="button" class="btn-secondary" onclick="hideGoalForm()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="saveGoal()">Set Goal & Reminder</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Important Days Modal ───────────────────────────────── -->
+    <div id="important-days-modal" class="mood-modal">
+        <div class="mood-modal-overlay" onclick="closeImportantDaysModal()"></div>
+        <div class="mood-modal-sheet">
+            <div class="modal-header">
+                <button type="button" class="modal-back-btn" onclick="closeImportantDaysModal()">
+                    <i class="bi bi-x"></i>
+                </button>
+                <h2 class="sheet-title">Important Days</h2>
+                <button type="button" class="modal-save-btn" id="important-days-add-btn"
+                    onclick="showImportantDayForm()">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+
+            <div class="modal-content">
+                <!-- List View -->
+                <div id="important-days-list-view">
+                    <!-- Important Days Tabs (Personal / Team) -->
+                    <div class="goals-filter-tabs">
+                        <button class="goals-filter-tab active" data-id-filter="personal"
+                            onclick="filterImportantDays('personal')">
+                            <i class="bi bi-person-fill"></i> Personal
+                        </button>
+                        <button class="goals-filter-tab" data-id-filter="team" onclick="filterImportantDays('team')">
+                            <i class="bi bi-people-fill"></i> Team
+                        </button>
+                    </div>
+
+                    <div id="important-days-list-container" class="goals-list-container">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+
+                <!-- Form View -->
+                <div id="important-day-form-view" style="display: none;">
+                    <div class="form-group">
+                        <label class="form-label">Choose Icon</label>
+                        <div style="display: flex; justify-content: center;">
+                            <button type="button" id="selected-event-emoji" onclick="openEventEmojiPicker()" style="
+                                font-size: 48px;
+                                width: 80px;
+                                height: 80px;
+                                border: 2px solid #e2e8f0;
+                                border-radius: 12px;
+                                background: #f8fafc;
+                                cursor: pointer;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                transition: all 0.2s;
+                            ">🎉</button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Choose Color</label>
+                        <div class="color-picker-grid">
+                            <button type="button" class="color-btn active" data-color="#ec4899" onclick="selectEventColor('#ec4899')" style="background: #ec4899;"></button>
+                            <button type="button" class="color-btn" data-color="#f97316" onclick="selectEventColor('#f97316')" style="background: #f97316;"></button>
+                            <button type="button" class="color-btn" data-color="#eab308" onclick="selectEventColor('#eab308')" style="background: #eab308;"></button>
+                            <button type="button" class="color-btn" data-color="#22c55e" onclick="selectEventColor('#22c55e')" style="background: #22c55e;"></button>
+                            <button type="button" class="color-btn" data-color="#3b82f6" onclick="selectEventColor('#3b82f6')" style="background: #3b82f6;"></button>
+                            <button type="button" class="color-btn" data-color="#8b5cf6" onclick="selectEventColor('#8b5cf6')" style="background: #8b5cf6;"></button>
+                            <button type="button" class="color-btn" data-color="#6366f1" onclick="selectEventColor('#6366f1')" style="background: #6366f1;"></button>
+                            <button type="button" class="color-btn" data-color="#64748b" onclick="selectEventColor('#64748b')" style="background: #64748b;"></button>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Event Name</label>
+                        <input type="text" id="important-day-title" class="form-input" placeholder="Enter event name"
+                            maxlength="100">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Date</label>
+                        <input type="date" id="important-day-date" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Time</label>
+                        <input type="time" id="important-day-time" class="form-input">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notes (Optional)</label>
+                        <textarea id="important-day-notes" class="note-input" placeholder="Add notes..." maxlength="200"
+                            rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Visibility</label>
+                        <div class="goal-type-grid">
+                            <button type="button" class="goal-type-btn active" data-id-type="personal"
+                                onclick="selectImportantDayType('personal')">
+                                <i class="bi bi-person-fill"></i>
+                                <span>Personal</span>
+                            </button>
+                            <button type="button" class="goal-type-btn" data-id-type="team"
+                                onclick="selectImportantDayType('team')">
+                                <i class="bi bi-people-fill"></i>
+                                <span>Share with Team</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="mood-actions-row">
+                        <button type="button" class="btn-secondary" onclick="hideImportantDayForm()">Cancel</button>
+                        <button type="button" class="btn-primary" onclick="saveImportantDay()">Save Event</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ─── Bottom Navigation Bar ────────────────────────────── -->
+    <nav class="bottom-nav">
+        <button class="nav-item active" data-tab="entries" onclick="switchTab('entries')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+                <line x1="16" y1="13" x2="8" y2="13" />
+                <line x1="16" y1="17" x2="8" y2="17" />
+                <polyline points="10 9 9 9 8 9" />
+            </svg>
+            <span>Entries</span>
+        </button>
+        <button class="nav-item" data-tab="stats" onclick="switchTab('stats')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="20" x2="18" y2="10" />
+                <line x1="12" y1="20" x2="12" y2="4" />
+                <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            <span>Stats</span>
+        </button>
+
+        <!-- Center FAB -->
+        <button id="main-fab" class="fab" onclick="toggleFabMenu()" aria-label="Add mood entry">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+        </button>
+
+        <button class="nav-item" data-tab="calendar" onclick="switchTab('calendar')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                <line x1="16" y1="2" x2="16" y2="6" />
+                <line x1="8" y1="2" x2="8" y2="6" />
+                <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+            <span>Calendar</span>
+        </button>
+
+        <button class="nav-item" data-tab="more" onclick="switchTab('more')">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="1.5" />
+                <circle cx="19" cy="12" r="1.5" />
+                <circle cx="5" cy="12" r="1.5" />
+            </svg>
+            <span>More</span>
+        </button>
+    </nav>
+
+    <!-- ─── Scripts ──────────────────────────────────────────── -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+    <script src="/js/config.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/customize.js"></script>
+    <script src="/js/app.js?v=3"></script>
+    <script src="/js/admin.js"></script>
+    <script src="/js/charts.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loadingScreen = document.getElementById('loading-screen');
+            const hideLoader = () => {
+                if (loadingScreen && !loadingScreen.classList.contains('fade-out')) {
+                    loadingScreen.classList.add('fade-out');
+                    setTimeout(() => loadingScreen.remove(), 800);
+                }
+            };
+
+            // Show logo for 2 seconds then fade out
+            setTimeout(hideLoader, 2000);
+        });
+    </script>
+
+</body>
+
+</html>

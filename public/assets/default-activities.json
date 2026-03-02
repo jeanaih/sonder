@@ -1,0 +1,22 @@
+{
+  "activities": [
+    { "emoji": "💼", "label": "Office Work" },
+    { "emoji": "💻", "label": "Coding" },
+    { "emoji": "📊", "label": "Meeting" },
+    { "emoji": "📝", "label": "Writing" },
+    { "emoji": "🎨", "label": "Designing" },
+    { "emoji": "😴", "label": "Good Sleep" },
+    { "emoji": "😪", "label": "Tired" },
+    { "emoji": "🛌", "label": "Bedtime" },
+    { "emoji": "🏃", "label": "Exercise" },
+    { "emoji": "🍔", "label": "Food" },
+    { "emoji": "☕", "label": "Coffee" },
+    { "emoji": "🎮", "label": "Gaming" },
+    { "emoji": "📚", "label": "Reading" },
+    { "emoji": "🎬", "label": "Movies" },
+    { "emoji": "🎵", "label": "Music" },
+    { "emoji": "👥", "label": "Friends" },
+    { "emoji": "❤️", "label": "Family" },
+    { "emoji": "🧘", "label": "Relax" }
+  ]
+}

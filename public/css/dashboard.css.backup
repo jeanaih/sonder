@@ -1,0 +1,1406 @@
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+
+}
+/* Emotion Grid - Circular style like screenshot */
+.emotion-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 12px;
+    padding: 4px;
+}
+
+@media (max-width: 480px) {
+    .emotion-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 10px;
+    }
+}
+
+.emotion-grid .activity-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+    background: #2a2a2a;
+    border: 2px solid #3a3a3a;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    transition: all 0.2s;
+}
+
+.emotion-grid .activity-emoji {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.emotion-grid .activity-btn.active .activity-emoji {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.emotion-grid .activity-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #999;
+    text-align: center;
+}
+
+.emotion-grid .activity-btn.active .activity-label {
+    color: #fff;
+}
+
+.section-content {
+    padding: 0 18px 18px;
+    max-height: 1000px;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.modal-section.collapsed .section-content {
+    max-height: 0;
+    padding: 0 18px;
+}
+
+.sheet-subtitle {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    margin: 16px 0 10px;
+}
+
+.optional-tag {
+    font-weight: 400;
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 0.7rem;
+}
+
+/* Mood Grid */
+.mood-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+    max-width: 100%;
+}
+
+@media (max-width: 480px) {
+    .mood-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (min-width: 481px) {
+    .mood-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+.mood-btn {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #2a2a2a;
+    border: 2px solid #3a3a3a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    transition: all 0.2s;
+    padding: 8px;
+}
+
+.mood-btn:active {
+    transform: scale(0.93);
+}
+
+.mood-btn.active {
+    border-color: var(--mood-color, var(--accent));
+    background: color-mix(in srgb, var(--mood-color, var(--accent)) 20%, #2a2a2a);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--mood-color, var(--accent)) 25%, transparent);
+}
+
+.mood-emoji {
+    font-size: 1.8rem;
+}
+
+.mood-btn.active .mood-emoji {
+    animation: bounce 0.35s ease;
+}
+
+@keyframes bounce {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.25);
+    }
+
+    100% {
+        transform: scale(1.1);
+    }
+}
+
+.mood-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #999;
+    text-align: center;
+    line-height: 1.1;
+}
+
+.mood-btn.active .mood-label {
+    color: var(--mood-color, var(--text));
+}
+
+/* Activity Grid */
+.activity-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+    gap: 12px;
+}
+
+@media (max-width: 480px) {
+    .activity-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (min-width: 481px) {
+    .activity-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.activity-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 8px;
+    background: #2a2a2a;
+    border: 2px solid #3a3a3a;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    color: var(--text);
+    outline: none;
+    transition: all 0.2s;
+}
+
+.activity-btn:active {
+    transform: scale(0.93);
+}
+
+.activity-btn.active {
+    border-color: #3498db;
+    background: rgba(52, 152, 219, 0.15);
+}
+
+.activity-emoji {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.activity-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: #999;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.activity-btn.active .activity-label {
+    color: #3498db;
+}
+
+/* Note Input */
+.note-input {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.82rem;
+    outline: none;
+    resize: none;
+    transition: border-color 0.15s;
+}
+
+.note-input::placeholder {
+    color: var(--text-muted);
+}
+
+.note-input:focus {
+    border-color: var(--accent);
+}
+
+.add-activity-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px dashed var(--border);
+    background: transparent;
+    color: var(--text-sub);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.custom-activity-editor {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.25);
+}
+
+.custom-activity-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.custom-activity-input {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.8rem;
+    padding: 6px 8px;
+}
+
+.emoji-input {
+    width: 40px;
+    text-align: center;
+}
+
+.label-input {
+    flex: 1;
+}
+
+.custom-activity-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.mood-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.btn-primary,
+.btn-secondary {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: none;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-primary {
+    background: var(--accent);
+    color: var(--bg);
+}
+
+.btn-secondary {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-sub);
+}
+
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   BOTTOM NAVIGATION (Daylio-style)
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    height: var(--nav-h);
+    background: #151528;
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 8px 0;
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: inherit;
+    cursor: pointer;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    transition: color 0.15s;
+}
+
+.nav-item span {
+    font-size: 0.6rem;
+    font-weight: 500;
+}
+
+.nav-item.active {
+    color: var(--accent);
+}
+
+.nav-item.active svg {
+    stroke: var(--accent);
+}
+
+.nav-item:active {
+    transform: scale(0.92);
+}
+
+/* FAB (Center Plus Button) */
+.fab {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    outline: none;
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 18px var(--accent-glow);
+    margin-bottom: 12px;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+    z-index: 505;
+}
+
+.fab:hover {
+    transform: scale(1.1);
+}
+
+.fab:active {
+    transform: scale(0.9);
+}
+
+/* Rotate the plus icon slightly when active or menu is open */
+.fab-menu-overlay.open~.bottom-nav #main-fab {
+    transform: scale(0.8) rotate(135deg);
+    opacity: 0;
+}
+
+/* â”€â”€â”€ Radial FAB Menu â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.fab-menu-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(12px) saturate(200%);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.4s ease, visibility 0.4s;
+}
+
+.fab-menu-overlay.open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.fab-menu-content {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    max-width: 450px;
+    pointer-events: none;
+}
+
+.fab-menu-item {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    margin-left: -29px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    pointer-events: auto;
+    cursor: pointer;
+    opacity: 0;
+    transform: translate(0, 50px) scale(0) rotate(-180deg);
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity 0.4s ease;
+    will-change: transform, opacity;
+}
+
+.fab-menu-overlay.open .fab-menu-item {
+    opacity: 1;
+    transition-delay: var(--d, 0s);
+}
+
+.menu-icon {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.15);
+    /* Morph rotate effect */
+    transform: rotate(360deg);
+    transition: transform 0.8s ease;
+}
+
+.fab-menu-overlay.open .menu-icon {
+    transform: rotate(0deg);
+}
+
+.menu-icon i {
+    font-size: 1.6rem;
+    color: white;
+}
+
+.fab-menu-item:active .menu-icon {
+    transform: scale(0.85);
+}
+
+.fab-menu-item span {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    white-space: nowrap;
+}
+
+/* â”€â”€â”€ Formation Logic (Fly-out points) â”€â”€â”€ */
+
+.item-goal .menu-icon {
+    background: linear-gradient(135deg, #a4e05b, #7bb136);
+}
+
+.fab-menu-overlay.open .item-goal {
+    transform: translate(-110px, -320px) scale(1) rotate(0deg);
+}
+
+.item-important .menu-icon {
+    background: linear-gradient(135deg, #3dbfb8, #2a8a85);
+}
+
+.fab-menu-overlay.open .item-important {
+    transform: translate(110px, -320px) scale(1) rotate(0deg);
+}
+
+.item-today .menu-icon {
+    background: linear-gradient(135deg, #74b9ff, #0984e3);
+}
+
+.fab-menu-overlay.open .item-today {
+    transform: translate(0, -180px) scale(1) rotate(0deg);
+}
+
+.item-yesterday .menu-icon {
+    background: linear-gradient(135deg, #55efc4, #00b894);
+}
+
+.fab-menu-overlay.open .item-yesterday {
+    transform: translate(-110px, -60px) scale(1) rotate(0deg);
+}
+
+.item-other .menu-icon {
+    background: linear-gradient(135deg, #fab1a0, #e17055);
+}
+
+.fab-menu-overlay.open .item-other {
+    transform: translate(110px, -60px) scale(1) rotate(0deg);
+}
+
+.fab-close {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%) rotate(-180deg) scale(0.5);
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: none;
+    color: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 32px var(--accent-glow);
+    pointer-events: auto;
+    transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 0;
+}
+
+.fab-menu-overlay.open .fab-close {
+    transform: translateX(-50%) rotate(0deg) scale(1.1);
+    opacity: 1;
+}
+
+.fab-close i {
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.fab-close:active {
+    transform: translateX(-50%) scale(0.9);
+}
+
+/* â”€â”€â”€ Toast â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+#toast-container {
+    position: fixed;
+    bottom: 80px;
+    left: 14px;
+    right: 14px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column-reverse;
+    gap: 6px;
+}
+
+.toast {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 0.78rem;
+    color: var(--text);
+    transform: translateY(16px);
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.toast-icon {
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.toast-msg {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* â”€â”€â”€ Charts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.chart-wrap {
+    position: relative;
+    width: 100%;
+}
+
+/* â”€â”€â”€ Empty â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.empty-msg {
+    text-align: center;
+    padding: 40px 16px;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.empty-msg span {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 8px;
+}
+
+/* â”€â”€â”€ Utilities â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.hidden {
+    display: none !important;
+}
+
+/* â”€â”€â”€ Desktop â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+@media (min-width: 768px) {
+    .main-content {
+        max-width: 480px;
+    }
+
+    .bottom-nav {
+        max-width: 420px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: 20px 20px 0 0;
+        border-left: 1px solid var(--border);
+        border-right: 1px solid var(--border);
+    }
+}
+
+/* â”€â”€â”€ Scrollbar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+::-webkit-scrollbar {
+    width: 4px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+}
+
+/* â”€â”€â”€ Calendar Section â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.calendar-grid {
+    display: grid !important;
+    grid-template-columns: repeat(7, 1fr) !important;
+    gap: 12px 6px !important;
+    padding: 8px 12px 20px;
+}
+
+.calendar-days-header {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    padding: 16px 12px 0;
+    text-align: center;
+    gap: 6px;
+}
+
+.cal-day {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    text-align: center;
+    opacity: 0.8;
+}
+
+/* Premium Cell Layout */
+.cal-day-cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 4px 0;
+    transition: transform 0.2s;
+}
+
+.cal-day-cell.clickable-cell {
+    cursor: pointer;
+}
+
+.cal-day-cell.clickable-cell:active {
+    transform: scale(0.92);
+}
+
+.cal-cell-top {
+    width: clamp(32px, 10vw, 42px) !important;
+    height: clamp(32px, 10vw, 42px) !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    color: rgba(255, 255, 255, 0.4);
+    position: relative;
+    transition: all 0.2s ease-out;
+}
+
+.cal-cell-top.has-mood {
+    background: var(--mood-color, var(--accent)) !important;
+    color: #111 !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.cal-cell-top.has-mood span {
+    font-size: clamp(1.1rem, 4vw, 1.4rem);
+}
+
+.cal-cell-bottom {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #fff;
+    opacity: 0.8;
+    line-height: 1;
+}
+
+.cal-day-cell.is-today .cal-cell-top {
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 10px rgba(125, 249, 255, 0.2);
+}
+
+.cal-cell-top.has-mood+.cal-cell-bottom {
+    opacity: 1;
+}
+
+/*  Calendar Mood Donut  */
+.mood-donut-container {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.mood-donut-arc {
+    position: relative;
+    width: 200px;
+    height: 100px;
+    border-top-left-radius: 100px;
+    border-top-right-radius: 100px;
+    border: 20px solid rgba(46, 204, 113, 0.4);
+    border-bottom: 0;
+    box-sizing: border-box;
+}
+
+.mood-donut-value {
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+}
+
+.mood-count-stats {
+    width: 100%;
+    padding: 15px 16px;
+}
+
+.mood-count-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.mood-count-chip {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+}
+
+.mood-count-face {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    font-size: 1.4rem;
+}
+
+.mood-count-badge {
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 999px;
+    background: #111827;
+    color: #f9fafb;
+    font-size: 0.68rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 4px;
+}
+
+/* â”€â”€â”€ Combined Filter Row â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.filter-row-container {
+    padding: 0 14px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    position: sticky;
+    top: 54px;
+    z-index: 10;
+    background: var(--bg);
+}
+
+.feed-filter-pill {
+    position: relative;
+    background: var(--bg-card);
+    padding: 4px;
+    border-radius: 40px;
+    display: flex;
+    flex: 1;
+    min-width: 0;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border);
+}
+
+.filter-btn {
+    flex: 1;
+    position: relative;
+    z-index: 2;
+    background: none;
+    border: none;
+    color: var(--text-sub);
+    padding: 8px 4px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 30px;
+    transition: color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    white-space: nowrap;
+}
+
+.filter-btn i {
+    font-size: 0.9rem;
+}
+
+.filter-btn.active {
+    color: #1a1a2e;
+}
+
+.filter-indicator {
+    position: absolute;
+    top: 4px;
+    bottom: 4px;
+    left: 4px;
+    width: calc(50% - 4px);
+    background: var(--accent);
+    border-radius: 30px;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1;
+}
+
+.filter-me .filter-indicator {
+    transform: translateX(100%);
+}
+
+
+
+
+
+.simple-day-filter {
+    flex-shrink: 0;
+}
+
+.unified-day-btn {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-sub);
+    min-width: 110px;
+    justify-content: center;
+}
+
+.unified-day-btn span {
+    font-size: 0.75rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+.unified-day-btn i {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+.unified-day-btn:hover {
+    border-color: var(--accent);
+    background: var(--bg-card-hover);
+}
+
+.unified-day-btn:active {
+    transform: scale(0.96);
+}
+
+
+/* â”€â”€â”€ Mood Edit Button (Improved) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.mood-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.mood-edit-btn {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--accent);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.mood-edit-btn:hover {
+    background: rgba(46, 204, 113, 0.15);
+    border-color: var(--accent);
+}
+
+.mood-edit-btn:active {
+    transform: scale(0.95);
+}
+
+.mood-edit-btn i {
+    font-size: 0.7rem;
+}
+
+/* â”€â”€â”€ Customization Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.customize-section {
+    margin-bottom: 24px;
+}
+
+.customize-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.btn-reset {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--border);
+    color: var(--text-sub);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.btn-reset:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+}
+
+.btn-reset i {
+    font-size: 0.75rem;
+}
+
+.customize-hint {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    font-style: italic;
+}
+
+.customize-grid {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.customize-grid.activity-style {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+}
+
+.customize-mood-item,
+.customize-activity-item {
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.customize-mood-item {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+}
+
+.customize-mood-item:hover,
+.customize-activity-item:hover {
+    transform: scale(1.05);
+    border-color: var(--accent);
+}
+
+.customize-activity-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 10px 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 2px solid transparent;
+    border-radius: var(--radius-sm);
+}
+
+.customize-activity-item .activity-emoji {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: #1a1a1a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+}
+
+.customize-activity-item .activity-label {
+    font-size: 0.6rem;
+    font-weight: 500;
+    color: var(--text-sub);
+    text-align: center;
+}
+
+.add-item-btn {
+    margin-top: 16px;
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 12px;
+    border: 2px dashed var(--border);
+    background: transparent;
+    color: var(--text-sub);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.2s;
+}
+
+.add-item-btn:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.add-item-btn i {
+    font-size: 1rem;
+}
+
+/* â”€â”€â”€ Edit Item Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.edit-item-sheet {
+    max-height: 70vh;
+}
+
+.edit-item-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.form-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.form-input {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-input:focus {
+    border-color: var(--accent);
+}
+
+.form-input.emoji-picker {
+    font-size: 1.8rem;
+    text-align: center;
+    padding: 12px;
+}
+
+.color-picker-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.color-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 12px;
+    border: 3px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.color-btn:hover {
+    transform: scale(1.1);
+}
+
+.color-btn.selected {
+    border-color: #fff;
+    box-shadow: 0 0 0 2px var(--bg-sheet), 0 0 12px rgba(255, 255, 255, 0.5);
+}
+
+.btn-danger {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: none;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    background: rgba(231, 76, 60, 0.15);
+    color: #e74c3c;
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+.btn-danger:hover {
+    background: rgba(231, 76, 60, 0.25);
+}
+
+.btn-danger:active {
+    transform: scale(0.95);
+}
+
+.btn-primary i,
+.btn-danger i {
+    font-size: 0.9rem;
+}
+
+/* Hide delete button for moods (only for activities) */
+#edit-item-modal[data-type="mood"] #delete-item-btn {
+    display: none;
+}
+
+/* â”€â”€â”€ Emoji Picker Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.emoji-picker-modal .emoji-picker-sheet {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.emoji-picker-modal .emoji-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+    gap: 8px;
+    padding: 16px 0;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.emoji-option {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 8px;
+}
+
+.emoji-option:hover {
+    background: var(--bg-card-hover);
+    transform: scale(1.05);
+}
+
+.emoji-option:active {
+    transform: scale(0.95);
+}
+
+.emoji-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* â”€â”€â”€ Emoji Input Wrapper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.emoji-input-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.emoji-preview {
+    width: 60px;
+    height: 60px;
+    background: var(--bg-card);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 2px solid var(--border);
+}
+
+.emoji-preview:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent);
+}
+
+.emoji-preview img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+}
+
+.btn-emoji-picker {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-emoji-picker:hover {
+    background: var(--bg-card-hover);
+    border-color: var(--accent);
+}
+
+.btn-emoji-picker i {
+    font-size: 1.1rem;
+}
+
+/* â”€â”€â”€ Emoji Image Support â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.emoji-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.customize-mood-item .emoji-img,
+.customize-activity-item .emoji-img {
+    width: 32px;
+    height: 32px;
+}
+
+.activity-emoji img {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+}
+
+/* â”€â”€â”€ Additional Emoji Image Styles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+.mood-emoji img.emoji-img,
+.activity-emoji img.emoji-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.mood-btn .emoji-img {
+    width: 48px;
+    height: 48px;
+}
+
+.activity-btn .emoji-img {
+    width: 28px;
+    height: 28px;
+}
+
+.entry-avatar img.emoji-img {
+    width: 40px;
+    height: 40px;
+}
+
+.mood-display-emoji img.emoji-img {
+    width: 24px;
+    height: 24px;
+}
+
+.how-mood-emoji img.emoji-img {
+    width: 36px;
+    height: 36px;
+}
+
+

@@ -1,0 +1,168 @@
+{
+  "emotions": {
+    "rad": [
+      { "emoji": "🎉", "label": "Celebrate" },
+      { "emoji": "😁", "label": "Happy" },
+      { "emoji": "🤩", "label": "Excited" },
+      { "emoji": "😎", "label": "Cool" },
+      { "emoji": "🥳", "label": "Party" },
+      { "emoji": "😄", "label": "Joyful" },
+      { "emoji": "🤗", "label": "Hugging" },
+      { "emoji": "😆", "label": "Laughing" },
+      { "emoji": "🌟", "label": "Amazing" },
+      { "emoji": "✨", "label": "Sparkle" }
+    ],
+    "good": [
+      { "emoji": "😊", "label": "Content" },
+      { "emoji": "🙂", "label": "Satisfied" },
+      { "emoji": "😌", "label": "Peaceful" },
+      { "emoji": "👍", "label": "Thumbs Up" },
+      { "emoji": "😇", "label": "Blessed" },
+      { "emoji": "🤝", "label": "Connected" },
+      { "emoji": "💚", "label": "Grateful" },
+      { "emoji": "☺️", "label": "Pleasant" },
+      { "emoji": "😀", "label": "Cheerful" },
+      { "emoji": "🌈", "label": "Hopeful" }
+    ],
+    "meh": [
+      { "emoji": "😑", "label": "Indifferent" },
+      { "emoji": "🤷", "label": "Whatever" },
+      { "emoji": "😶", "label": "Blank" },
+      { "emoji": "🫤", "label": "Uncertain" },
+      { "emoji": "😐", "label": "Neutral" },
+      { "emoji": "🙄", "label": "Unimpressed" },
+      { "emoji": "😏", "label": "Meh" },
+      { "emoji": "🤨", "label": "Skeptical" },
+      { "emoji": "😒", "label": "Bored" },
+      { "emoji": "💭", "label": "Thinking" }
+    ],
+    "bad": [
+      { "emoji": "😞", "label": "Disappointed" },
+      { "emoji": "😟", "label": "Worried" },
+      { "emoji": "😕", "label": "Confused" },
+      { "emoji": "😣", "label": "Struggling" },
+      { "emoji": "😔", "label": "Pensive" },
+      { "emoji": "😖", "label": "Frustrated" },
+      { "emoji": "😤", "label": "Annoyed" },
+      { "emoji": "😠", "label": "Angry" },
+      { "emoji": "🙁", "label": "Frowning" },
+      { "emoji": "💢", "label": "Irritated" }
+    ],
+    "awful": [
+      { "emoji": "😢", "label": "Sad" },
+      { "emoji": "😰", "label": "Anxious" },
+      { "emoji": "😫", "label": "Stressed" },
+      { "emoji": "😭", "label": "Crying" },
+      { "emoji": "💔", "label": "Heartbroken" },
+      { "emoji": "😩", "label": "Exhausted" },
+      { "emoji": "😱", "label": "Scared" },
+      { "emoji": "😨", "label": "Fearful" },
+      { "emoji": "😓", "label": "Overwhelmed" },
+      { "emoji": "🌧️", "label": "Gloomy" }
+    ]
+  },
+  "activities": {
+    "work": [
+      { "emoji": "💼", "label": "Office Work" },
+      { "emoji": "💻", "label": "Coding" },
+      { "emoji": "📊", "label": "Meeting" },
+      { "emoji": "📝", "label": "Writing" },
+      { "emoji": "🎨", "label": "Designing" },
+      { "emoji": "📞", "label": "Phone Call" },
+      { "emoji": "📧", "label": "Email" },
+      { "emoji": "🖥️", "label": "Computer Work" },
+      { "emoji": "📈", "label": "Planning" },
+      { "emoji": "🗂️", "label": "Organizing" },
+      { "emoji": "⌨️", "label": "Typing" },
+      { "emoji": "🖱️", "label": "Working" }
+    ],
+    "sleep": [
+      { "emoji": "😴", "label": "Good Sleep" },
+      { "emoji": "😪", "label": "Tired" },
+      { "emoji": "🛌", "label": "Bedtime" },
+      { "emoji": "☕", "label": "Woke Up" },
+      { "emoji": "🌙", "label": "Night Sleep" },
+      { "emoji": "💤", "label": "Sleeping" },
+      { "emoji": "🥱", "label": "Yawning" },
+      { "emoji": "😵", "label": "Bad Sleep" },
+      { "emoji": "🌅", "label": "Morning" },
+      { "emoji": "⏰", "label": "Alarm" }
+    ],
+    "exercise": [
+      { "emoji": "🏃", "label": "Running" },
+      { "emoji": "🏋️", "label": "Gym" },
+      { "emoji": "🧘", "label": "Yoga" },
+      { "emoji": "🚴", "label": "Cycling" },
+      { "emoji": "🏊", "label": "Swimming" },
+      { "emoji": "⚽", "label": "Sports" },
+      { "emoji": "🤸", "label": "Stretching" },
+      { "emoji": "🥊", "label": "Boxing" },
+      { "emoji": "🏀", "label": "Basketball" },
+      { "emoji": "🎾", "label": "Tennis" },
+      { "emoji": "💪", "label": "Workout" },
+      { "emoji": "🚶", "label": "Walking" }
+    ],
+    "food": [
+      { "emoji": "🍔", "label": "Eating" },
+      { "emoji": "☕", "label": "Coffee" },
+      { "emoji": "🍕", "label": "Lunch" },
+      { "emoji": "🍰", "label": "Dessert" },
+      { "emoji": "🥗", "label": "Healthy Food" },
+      { "emoji": "🍜", "label": "Dinner" },
+      { "emoji": "🥤", "label": "Drinks" },
+      { "emoji": "🍳", "label": "Breakfast" },
+      { "emoji": "🍱", "label": "Meal Prep" },
+      { "emoji": "🍿", "label": "Snack" },
+      { "emoji": "🧃", "label": "Juice" },
+      { "emoji": "🥪", "label": "Sandwich" }
+    ],
+    "social": [
+      { "emoji": "👥", "label": "Friends" },
+      { "emoji": "❤️", "label": "Family" },
+      { "emoji": "💬", "label": "Chatting" },
+      { "emoji": "🎉", "label": "Party" },
+      { "emoji": "🤝", "label": "Meeting People" },
+      { "emoji": "📱", "label": "Social Media" },
+      { "emoji": "🎮", "label": "Gaming Together" },
+      { "emoji": "🍻", "label": "Hangout" },
+      { "emoji": "👨‍👩‍👧‍👦", "label": "Family Time" },
+      { "emoji": "💑", "label": "Date" }
+    ],
+    "entertainment": [
+      { "emoji": "🎬", "label": "Movies" },
+      { "emoji": "🎵", "label": "Music" },
+      { "emoji": "🎮", "label": "Gaming" },
+      { "emoji": "📚", "label": "Reading" },
+      { "emoji": "📺", "label": "TV Shows" },
+      { "emoji": "🎧", "label": "Podcast" },
+      { "emoji": "🎪", "label": "Event" },
+      { "emoji": "🎭", "label": "Theater" },
+      { "emoji": "🎨", "label": "Art" },
+      { "emoji": "📖", "label": "Book" }
+    ],
+    "relaxation": [
+      { "emoji": "🧘", "label": "Meditation" },
+      { "emoji": "🛀", "label": "Bath" },
+      { "emoji": "🌿", "label": "Nature" },
+      { "emoji": "🕯️", "label": "Calm" },
+      { "emoji": "☕", "label": "Tea Time" },
+      { "emoji": "🎶", "label": "Chill Music" },
+      { "emoji": "📖", "label": "Quiet Reading" },
+      { "emoji": "🌅", "label": "Sunset" },
+      { "emoji": "🧖", "label": "Spa" },
+      { "emoji": "💆", "label": "Massage" }
+    ],
+    "chores": [
+      { "emoji": "🧹", "label": "Cleaning" },
+      { "emoji": "🧺", "label": "Laundry" },
+      { "emoji": "🍳", "label": "Cooking" },
+      { "emoji": "🛒", "label": "Shopping" },
+      { "emoji": "🚗", "label": "Errands" },
+      { "emoji": "🧽", "label": "Dishes" },
+      { "emoji": "🪴", "label": "Gardening" },
+      { "emoji": "🔧", "label": "Fixing" },
+      { "emoji": "📦", "label": "Organizing" },
+      { "emoji": "🗑️", "label": "Trash" }
+    ]
+  }
+}

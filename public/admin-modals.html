@@ -1,0 +1,214 @@
+<!-- Admin Panel Modal -->
+<div id="admin-panel-modal" class="mood-modal">
+    <div class="mood-modal-overlay" onclick="closeAdminPanel()"></div>
+    <div class="mood-modal-sheet">
+        <div class="modal-header">
+            <button type="button" class="modal-back-btn" onclick="closeAdminPanel()">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <h2 class="sheet-title">Admin Panel</h2>
+            <div style="width: 40px;"></div>
+        </div>
+        <div class="modal-content" style="padding: 20px;">
+            <!-- Organization Code -->
+            <div class="admin-section">
+                <h3 class="admin-section-title">Group Code</h3>
+                <div class="admin-code-display">
+                    <span id="admin-org-code" class="org-code-text">------</span>
+                    <button class="btn-copy-code" onclick="copyAdminCode()">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+                <p class="admin-hint">Share this code with new admins</p>
+            </div>
+
+            <!-- Settings -->
+            <div class="admin-section">
+                <h3 class="admin-section-title">Settings</h3>
+
+                <!-- Allow Members to Invite -->
+                <div class="admin-setting-item">
+                    <div class="admin-setting-info">
+                        <div class="admin-setting-label">Members can invite</div>
+                        <div class="admin-setting-desc">Allow members to invite others using group code</div>
+                    </div>
+                    <label class="settings-toggle">
+                        <input type="checkbox" id="members-can-invite-toggle"
+                            onchange="toggleMembersCanInvite(this.checked)">
+                        <span class="settings-toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="admin-section">
+                <h3 class="admin-section-title">Actions</h3>
+
+                <button class="admin-action-btn" onclick="openTeamStats()">
+                    <i class="bi bi-graph-up"></i>
+                    <span>Team Statistics</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+
+                <button class="admin-action-btn" onclick="openManageMembers()">
+                    <i class="bi bi-people"></i>
+                    <span>Manage Members</span>
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Manage Members Modal -->
+<div id="manage-members-modal" class="mood-modal">
+    <div class="mood-modal-overlay" onclick="closeManageMembers()"></div>
+    <div class="mood-modal-sheet">
+        <div class="modal-header">
+            <button type="button" class="modal-back-btn" onclick="closeManageMembers()">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <h2 class="sheet-title">Manage Members</h2>
+            <div style="width: 40px;"></div>
+        </div>
+        <div class="modal-content" style="padding: 20px;">
+            <div id="members-list" class="members-manage-list">
+                <!-- Members will be injected here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Team Stats Modal -->
+<div id="team-stats-modal" class="mood-modal">
+    <div class="mood-modal-overlay" onclick="closeTeamStats()"></div>
+    <div class="mood-modal-sheet team-stats-sheet">
+        <div class="modal-header">
+            <button type="button" class="modal-back-btn" onclick="closeTeamStats()">
+                <i class="bi bi-arrow-left"></i>
+            </button>
+            <h2 class="sheet-title">Team Statistics</h2>
+            <div style="width: 40px;"></div>
+        </div>
+        <!-- Time Range Selector -->
+        <div class="stats-timerange-container"
+            style="margin-bottom: 20px; display: flex; align-items: center; gap: 12px; background: white; padding: 12px 18px; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.04);">
+            <i class="bi bi-calendar3" style="color: var(--accent-primary); font-size: 1.1rem;"></i>
+            <label for="stats-range-select"
+                style="font-size: 0.95rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 0;">Time
+                Range:</label>
+            <select id="stats-range-select" class="form-select" onchange="updateTeamStatsRange(this.value)"
+                style="flex: 1; border: none; font-weight: 700; color: var(--text); background: transparent; cursor: pointer; outline: none; font-size: 1rem;">
+                <option value="7">Last 7 Days</option>
+                <option value="30" selected>Last 30 Days</option>
+                <option value="90">Last 90 Days</option>
+                <option value="all">All Time</option>
+            </select>
+            <i class="bi bi-chevron-down" style="font-size: 0.8rem; color: var(--text-muted);"></i>
+        </div>
+
+        <!-- Team Activity Summary Card with Icons -->
+        <div class="card team-summary-card">
+            <div class="team-summary-header">
+                <div>
+                    <h3 class="card-label" style="font-size: 1.2rem; color: var(--text); margin-bottom: 4px;">Team
+                        Overview</h3>
+                    <p id="stats-date-range-label" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Last
+                        30 days performance</p>
+                </div>
+                <div class="team-summary-icon">
+                    <i class="bi bi-people-fill"></i>
+                </div>
+            </div>
+            <div class="team-stat-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;">
+                <div class="team-stat-item">
+                    <div class="team-stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="bi bi-journal-text"></i>
+                    </div>
+                    <div class="team-stat-value" id="total-entries">0</div>
+                    <div class="team-stat-label">Total Entries</div>
+                </div>
+                <div class="team-stat-item">
+                    <div class="team-stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="bi bi-graph-up"></i>
+                    </div>
+                    <div class="team-stat-value" id="avg-entries-per-day">0</div>
+                    <div class="team-stat-label">Avg per Day</div>
+                </div>
+                <div class="team-stat-item">
+                    <div class="team-stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="bi bi-person-check-fill"></i>
+                    </div>
+                    <div class="team-stat-value" id="active-members">0/0</div>
+                    <div class="team-stat-label">Active Members</div>
+                </div>
+                <div class="team-stat-item">
+                    <div class="team-stat-icon" style="background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%);">
+                        <i class="bi bi-fire"></i>
+                    </div>
+                    <div class="team-stat-value" id="team-streak">0</div>
+                    <div class="team-stat-label">Day Streak</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Member Breakdown -->
+        <div class="card team-chart-card" id="member-breakdown-section" style="margin-bottom: 20px;">
+            <div class="chart-header">
+                <h3 class="card-label" style="font-size: 1.1rem; color: var(--text);">
+                    <i class="bi bi-person-lines-fill" style="margin-right: 8px; color: var(--accent-primary);"></i>
+                    Member Breakdown
+                </h3>
+            </div>
+            <div id="member-stats-list" class="member-stats-list" style="margin-top: 15px;">
+                <!-- Member stats will be injected here -->
+                <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                    <i class="bi bi-hourglass-split"
+                        style="font-size: 1.5rem; display: block; margin-bottom: 10px;"></i>
+                    Loading member stats...
+                </div>
+            </div>
+        </div>
+
+        <!-- Team Mood Chart -->
+        <div class="card team-chart-card">
+            <div class="chart-header">
+                <div>
+                    <h3 class="card-label" style="font-size: 1.1rem; color: var(--text); margin-bottom: 4px;">
+                        <i class="bi bi-activity" style="margin-right: 8px; color: var(--accent-primary);"></i>
+                        Team Mood Trends
+                    </h3>
+                    <p id="mood-trend-label" style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">Daily mood
+                        tracking over the past week</p>
+                </div>
+            </div>
+            <div class="chart-wrap"><canvas id="team-overall-mood-chart"></canvas></div>
+        </div>
+
+        <!-- Two Column Layout for Distribution Charts -->
+        <div class="team-charts-row">
+            <!-- Team Mood Distribution -->
+            <div class="card team-chart-card team-chart-half">
+                <div class="chart-header">
+                    <h3 class="card-label" style="font-size: 1.1rem;">
+                        <i class="bi bi-pie-chart-fill" style="margin-right: 8px; color: var(--accent-primary);"></i>
+                        Mood Distribution
+                    </h3>
+                </div>
+                <div class="chart-wrap chart-wrap-small"><canvas id="team-overall-dist-chart"></canvas></div>
+            </div>
+
+            <!-- Top Team Activities -->
+            <div class="card team-chart-card team-chart-half">
+                <div class="chart-header">
+                    <h3 class="card-label" style="font-size: 1.1rem;">
+                        <i class="bi bi-star-fill" style="margin-right: 8px; color: var(--accent-primary);"></i>
+                        Top Activities
+                    </h3>
+                </div>
+                <div class="chart-wrap chart-wrap-small"><canvas id="team-overall-activity-chart"></canvas></div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>

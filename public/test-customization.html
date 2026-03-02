@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Customization</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a2e;
+            color: white;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            background: #2ecc71;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #232340;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Customization Test</h1>
+    <button onclick="testLoadMoods()">Test Load Moods</button>
+    <button onclick="testLoadActivities()">Test Load Activities</button>
+    <button onclick="testSaveMoods()">Test Save Custom Mood</button>
+    <button onclick="clearStorage()">Clear Storage</button>
+    
+    <div class="result" id="result"></div>
+
+    <script src="/js/customize.js"></script>
+    <script>
+        async function testLoadMoods() {
+            const moods = await getCustomMoods();
+            document.getElementById('result').innerHTML = 
+                '<h3>Loaded Moods:</h3>' + 
+                '<pre>' + JSON.stringify(moods, null, 2) + '</pre>';
+        }
+
+        async function testLoadActivities() {
+            const activities = await getCustomActivities();
+            document.getElementById('result').innerHTML = 
+                '<h3>Loaded Activities:</h3>' + 
+                '<pre>' + JSON.stringify(activities, null, 2) + '</pre>';
+        }
+
+        async function testSaveMoods() {
+            const customMood = [
+                { emoji: "🎉", label: "Awesome", color: "#ff6b6b" },
+                { emoji: "😊", label: "Happy", color: "#4ecdc4" },
+                { emoji: "😐", label: "Meh", color: "#95a5a6" },
+                { emoji: "😔", label: "Down", color: "#3498db" },
+                { emoji: "😢", label: "Sad", color: "#9b59b6" }
+            ];
+            localStorage.setItem('psyc_custom_moods', JSON.stringify(customMood));
+            document.getElementById('result').innerHTML = 
+                '<h3>Saved Custom Moods!</h3>' + 
+                '<pre>' + JSON.stringify(customMood, null, 2) + '</pre>';
+        }
+
+        function clearStorage() {
+            localStorage.removeItem('psyc_custom_moods');
+            localStorage.removeItem('psyc_custom_activities');
+            document.getElementById('result').innerHTML = 
+                '<h3>Storage Cleared!</h3><p>Reload to see defaults.</p>';
+        }
+    </script>
+</body>
+</html>

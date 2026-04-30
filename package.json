@@ -1,0 +1,1 @@
+{ "name": "sonder-app", "version": "1.0.0", "scripts": { "start": "npx serve -s public" }, "dependencies": { "@capacitor/cli": "^8.2.0", "@capacitor/core": "^8.2.0", "@capacitor/local-notifications": "^8.0.2", "@capacitor/push-notifications": "^8.0.2", "@supabase/supabase-js": "^2.98.0" } } 
